@@ -28,13 +28,7 @@ INCDIRS     := +incdir+$(RTL_DIR) \
                +incdir+$(TB_DIR)/tests \
                +incdir+$(TB_DIR)/top
 
-RTL_FILES   := $(RTL_DIR)/sync_fifo.v \
-               $(RTL_DIR)/read_issuer.v \
-               $(RTL_DIR)/data_issuer.v \
-               $(RTL_DIR)/data_resposer.v \
-               $(RTL_DIR)/addr_splitter.v \
-               $(RTL_DIR)/addr_issuer.v \
-               $(RTL_DIR)/master_top.v
+RTL_FILES   := $(RTL_DIR)/master_top.v
 
 TB_FILES    := $(TB_DIR)/packages/axi_types_pkg.sv \
                $(TB_DIR)/interfaces/axi_interface.sv \
@@ -49,7 +43,7 @@ TB_FILES    := $(TB_DIR)/packages/axi_types_pkg.sv \
 # ------------------------------------------------------------------------------
 # Cadence Xcelium Flow (xrun)
 # ------------------------------------------------------------------------------
-XRUN_OPTS   := -64bit -sv -uvm -timescale 1ns/1ps -access +rwc
+XRUN_OPTS   := -64bit -sv -uvm -timescale 1ns/1ps -access +rwc -ALLOWREDEFINITION
 XRUN_COV    := -coverage all -covoverwrite -covworkdir $(REPORTS_DIR)/coverage
 
 xrun-compile:

@@ -24,14 +24,8 @@ set INC_DIRS "+incdir+$RTL_DIR \
               +incdir+$TB_DIR/tests \
               +incdir+$TB_DIR/top"
 
-# RTL Source Files
-set RTL_SRCS "$RTL_DIR/sync_fifo.v \
-              $RTL_DIR/read_issuer.v \
-              $RTL_DIR/data_issuer.v \
-              $RTL_DIR/data_resposer.v \
-              $RTL_DIR/addr_splitter.v \
-              $RTL_DIR/addr_issuer.v \
-              $RTL_DIR/master_top.v"
+# RTL Source Files (master_top.v includes all submodules)
+set RTL_SRCS "$RTL_DIR/master_top.v"
 
 # Testbench Packages and Interfaces
 set TB_SRCS "$TB_DIR/packages/axi_types_pkg.sv \

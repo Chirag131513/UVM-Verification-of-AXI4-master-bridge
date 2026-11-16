@@ -10,6 +10,8 @@
 
 `include "uvm_macros.svh"
 
+`timescale 1ns/1ps
+
 package axi_vip_pkg;
 
     import uvm_pkg::*;

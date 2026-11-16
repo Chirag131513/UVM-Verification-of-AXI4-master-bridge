@@ -8,6 +8,8 @@
 `ifndef AXI_TYPES_PKG_SV
 `define AXI_TYPES_PKG_SV
 
+`timescale 1ns/1ps
+
 package axi_types_pkg;
 
     // ------------------------------------------------------------------------

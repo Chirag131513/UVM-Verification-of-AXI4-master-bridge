@@ -146,10 +146,10 @@ class axi_transaction extends uvm_sequence_item;
     function void post_randomize();
         wlast = new[int'(len) + 1];
         rlast = new[int'(len) + 1];
-        for (int i = 0; i <= int'(len); i++) {
-            wlast[i] = (i == int'(len));
-            rlast[i] = (i == int'(len));
-        }
+        for (int i = 0; i <= int'(len); i++) begin
+            wlast[i] = (i == int'(len)) ? 1'b1 : 1'b0;
+            rlast[i] = (i == int'(len)) ? 1'b1 : 1'b0;
+        end
     endfunction
 
     // ------------------------------------------------------------------------
