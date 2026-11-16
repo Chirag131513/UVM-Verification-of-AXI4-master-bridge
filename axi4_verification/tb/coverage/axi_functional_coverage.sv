@@ -92,6 +92,13 @@ class axi_functional_coverage extends uvm_subscriber #(axi_transaction);
     covergroup cg_data_strobes;
         option.per_instance = 1;
 
+        cp_addr_alignment_w: coverpoint cur_tx.addr[1:0] {
+            bins ALIGNED_0 = {2'b00};
+            bins OFFSET_1  = {2'b01};
+            bins OFFSET_2  = {2'b10};
+            bins OFFSET_3  = {2'b11};
+        }
+
         cp_wstrb_first_beat: coverpoint cur_tx.wstrb[0] {
             bins FULL_STROBE    = {4'b1111};
             bins SINGLE_LANE_0  = {4'b0001};
@@ -102,7 +109,7 @@ class axi_functional_coverage extends uvm_subscriber #(axi_transaction);
             bins PARTIAL_LOWER  = {4'b0011, 4'b0111};
         }
 
-        cross_align_x_strb: cross cg_axi_trans.cp_addr_alignment, cp_wstrb_first_beat;
+        cross_align_x_strb: cross cp_addr_alignment_w, cp_wstrb_first_beat;
     endgroup
 
     // ------------------------------------------------------------------------

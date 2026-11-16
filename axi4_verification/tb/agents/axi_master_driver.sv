@@ -12,7 +12,7 @@ class axi_master_driver extends uvm_driver #(axi_transaction);
     `uvm_component_utils(axi_master_driver)
 
     axi_master_config cfg;
-    mailbox #(axi_bfm_command) uvm_to_bfm;
+    axi_cmd_mbx_t     uvm_to_bfm;
 
     function new(string name, uvm_component parent);
         super.new(name, parent);
@@ -25,7 +25,7 @@ class axi_master_driver extends uvm_driver #(axi_transaction);
         end
         // Only fetch mailbox if active
         if (cfg.is_active == UVM_ACTIVE) begin
-            if (!uvm_config_db#(mailbox #(axi_bfm_command))::get(this, "", "uvm_to_bfm", uvm_to_bfm)) begin
+            if (!uvm_config_db#(axi_cmd_mbx_t)::get(this, "", "uvm_to_bfm", uvm_to_bfm)) begin
                 `uvm_fatal("MST_DRV", "uvm_to_bfm mailbox not found")
             end
         end

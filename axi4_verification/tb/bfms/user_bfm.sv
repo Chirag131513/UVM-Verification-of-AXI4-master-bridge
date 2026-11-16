@@ -9,8 +9,6 @@
 `ifndef USER_BFM_SV
 `define USER_BFM_SV
 
-import axi_types_pkg::*;
-
 interface user_bfm #(
     parameter int ADDR_WIDTH = 32,
     parameter int DATA_WIDTH = 32
@@ -43,8 +41,10 @@ interface user_bfm #(
     input  logic                      read_error
 );
 
-    mailbox #(user_bfm_command) uvm_to_bfm;
-    mailbox #(user_bfm_event)   bfm_to_uvm;
+    import axi_types_pkg::*;
+
+    user_cmd_mbx_t uvm_to_bfm;
+    user_ev_mbx_t  bfm_to_uvm;
 
     longint unsigned cycle_count = 0;
     always_ff @(posedge clk or negedge rst_n) begin

@@ -13,8 +13,8 @@ class axi_slave_driver extends uvm_driver #(axi_transaction);
     `uvm_component_utils(axi_slave_driver)
 
     axi_slave_config cfg;
-    mailbox #(axi_bfm_command) uvm_to_bfm;
-    mailbox #(axi_bfm_event)   bfm_to_uvm;
+    axi_cmd_mbx_t    uvm_to_bfm;
+    axi_ev_mbx_t     bfm_to_uvm;
 
     // Reactive slave internal memory (byte-addressable sparse array)
     bit [7:0] mem [bit [31:0]];
@@ -51,10 +51,10 @@ class axi_slave_driver extends uvm_driver #(axi_transaction);
         if (!uvm_config_db#(axi_slave_config)::get(this, "", "cfg", cfg)) begin
             cfg = axi_slave_config::type_id::create("cfg");
         end
-        if (!uvm_config_db#(mailbox #(axi_bfm_command))::get(this, "", "uvm_to_bfm", uvm_to_bfm)) begin
+        if (!uvm_config_db#(axi_cmd_mbx_t)::get(this, "", "uvm_to_bfm", uvm_to_bfm)) begin
             `uvm_fatal("SLV_DRV", "uvm_to_bfm mailbox handle not found in config_db")
         end
-        if (!uvm_config_db#(mailbox #(axi_bfm_event))::get(this, "", "bfm_to_uvm", bfm_to_uvm)) begin
+        if (!uvm_config_db#(axi_ev_mbx_t)::get(this, "", "bfm_to_uvm", bfm_to_uvm)) begin
             `uvm_fatal("SLV_DRV", "bfm_to_uvm mailbox handle not found in config_db")
         end
     endfunction
@@ -165,7 +165,7 @@ class axi_slave_driver extends uvm_driver #(axi_transaction);
     // ------------------------------------------------------------------------
     // Dispatch B Response Command
     // ------------------------------------------------------------------------
-    function void schedule_write_response(bit [3:0] id);
+    task schedule_write_response(bit [3:0] id);
         axi_bfm_command b_cmd;
         b_cmd.channel_id   = AXI_CH_B;
         b_cmd.id           = id;
@@ -173,12 +173,12 @@ class axi_slave_driver extends uvm_driver #(axi_transaction);
         b_cmd.delay_cycles = (cfg.timing_profile == PROFILE_STRESS_STALL) ? 8 :
                              (cfg.timing_profile == PROFILE_RANDOM_DELAY) ? $urandom_range(0, 3) : 0;
         uvm_to_bfm.put(b_cmd);
-    endfunction
+    endtask
 
     // ------------------------------------------------------------------------
     // Dispatch R Response Command
     // ------------------------------------------------------------------------
-    function void schedule_read_response(axi_bfm_event ar_ev);
+    task schedule_read_response(axi_bfm_event ar_ev);
         axi_bfm_command r_cmd;
         bit [31:0] curr_addr;
         bit [31:0] wrap_lower, wrap_upper;
@@ -211,7 +211,7 @@ class axi_slave_driver extends uvm_driver #(axi_transaction);
         end
 
         uvm_to_bfm.put(r_cmd);
-    endfunction
+    endtask
 
 endclass : axi_slave_driver
 

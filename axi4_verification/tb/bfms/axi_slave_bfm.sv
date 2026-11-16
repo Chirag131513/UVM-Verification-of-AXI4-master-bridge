@@ -9,8 +9,6 @@
 `ifndef AXI_SLAVE_BFM_SV
 `define AXI_SLAVE_BFM_SV
 
-import axi_types_pkg::*;
-
 interface axi_slave_bfm #(
     parameter int ADDR_WIDTH = 32,
     parameter int DATA_WIDTH = 32,
@@ -59,11 +57,13 @@ interface axi_slave_bfm #(
     input  logic                      rready
 );
 
+    import axi_types_pkg::*;
+
     // ------------------------------------------------------------------------
     // Mailboxes for Synchronization with UVM Driver & Monitor
     // ------------------------------------------------------------------------
-    mailbox #(axi_bfm_command) uvm_to_bfm;
-    mailbox #(axi_bfm_event)   bfm_to_uvm;
+    axi_cmd_mbx_t uvm_to_bfm;
+    axi_ev_mbx_t  bfm_to_uvm;
 
     // Cycle counter
     longint unsigned cycle_count = 0;

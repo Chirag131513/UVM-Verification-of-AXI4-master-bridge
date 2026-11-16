@@ -129,6 +129,14 @@ package axi_types_pkg;
     } user_bfm_event;
 
     // ------------------------------------------------------------------------
+    // Mailbox Handle Type Definitions
+    // ------------------------------------------------------------------------
+    typedef mailbox #(axi_bfm_command)  axi_cmd_mbx_t;
+    typedef mailbox #(axi_bfm_event)    axi_ev_mbx_t;
+    typedef mailbox #(user_bfm_command) user_cmd_mbx_t;
+    typedef mailbox #(user_bfm_event)   user_ev_mbx_t;
+
+    // ------------------------------------------------------------------------
     // Utility Helper Functions for AXI4 Arithmetic
     // ------------------------------------------------------------------------
 

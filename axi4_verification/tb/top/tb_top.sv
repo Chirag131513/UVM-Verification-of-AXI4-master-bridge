@@ -8,11 +8,11 @@
 
 `timescale 1ns/1ps
 
-import uvm_pkg::*;
-import axi_types_pkg::*;
-import axi_vip_pkg::*;
-
 module tb_top;
+
+    import uvm_pkg::*;
+    import axi_types_pkg::*;
+    import axi_vip_pkg::*;
 
     // Parameters
     parameter int ADDR_WIDTH      = 32;
@@ -259,14 +259,22 @@ module tb_top;
     );
 
     // ------------------------------------------------------------------------
+    // Mailbox-Synchronized BFM Communication Handles
+    // ------------------------------------------------------------------------
+    axi_cmd_mbx_t  slv_u2b;
+    axi_ev_mbx_t   slv_b2u;
+    user_cmd_mbx_t usr_u2b;
+    user_ev_mbx_t  usr_b2u;
+
+    // ------------------------------------------------------------------------
     // Configuration & UVM Test Kickoff
     // ------------------------------------------------------------------------
     initial begin
         // Instantiate and wire mailboxes
-        mailbox #(axi_bfm_command) slv_u2b = new();
-        mailbox #(axi_bfm_event)   slv_b2u = new();
-        mailbox #(user_bfm_command) usr_u2b = new();
-        mailbox #(user_bfm_event)   usr_b2u = new();
+        slv_u2b = new();
+        slv_b2u = new();
+        usr_u2b = new();
+        usr_b2u = new();
 
         slave_bfm.uvm_to_bfm = slv_u2b;
         slave_bfm.bfm_to_uvm = slv_b2u;
@@ -278,11 +286,11 @@ module tb_top;
         uvm_config_db#(virtual axi_interface.monitor_mp)::set(null, "*", "vif", axi_if.monitor_mp);
         uvm_config_db#(virtual user_interface.monitor_mp)::set(null, "*", "vif", user_if.monitor_mp);
 
-        uvm_config_db#(mailbox #(axi_bfm_command))::set(null, "*slave_agent*", "uvm_to_bfm", slv_u2b);
-        uvm_config_db#(mailbox #(axi_bfm_event))::set(null, "*slave_agent*", "bfm_to_uvm", slv_b2u);
+        uvm_config_db#(axi_cmd_mbx_t)::set(null, "*slave_agent*", "uvm_to_bfm", slv_u2b);
+        uvm_config_db#(axi_ev_mbx_t)::set(null, "*slave_agent*", "bfm_to_uvm", slv_b2u);
 
-        uvm_config_db#(mailbox #(user_bfm_command))::set(null, "*user_agent*", "uvm_to_bfm", usr_u2b);
-        uvm_config_db#(mailbox #(user_bfm_event))::set(null, "*user_agent*", "bfm_to_uvm", usr_b2u);
+        uvm_config_db#(user_cmd_mbx_t)::set(null, "*user_agent*", "uvm_to_bfm", usr_u2b);
+        uvm_config_db#(user_ev_mbx_t)::set(null, "*user_agent*", "bfm_to_uvm", usr_b2u);
 
         // Run default test (can be overridden via +UVM_TESTNAME)
         run_test("axi_directed_test");

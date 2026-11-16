@@ -9,8 +9,6 @@
 `ifndef AXI_MASTER_BFM_SV
 `define AXI_MASTER_BFM_SV
 
-import axi_types_pkg::*;
-
 interface axi_master_bfm #(
     parameter int ADDR_WIDTH = 32,
     parameter int DATA_WIDTH = 32,
@@ -82,8 +80,10 @@ interface axi_master_bfm #(
     output logic                      rready_out
 );
 
-    mailbox #(axi_bfm_command) uvm_to_bfm;
-    mailbox #(axi_bfm_event)   bfm_to_uvm;
+    import axi_types_pkg::*;
+
+    axi_cmd_mbx_t uvm_to_bfm;
+    axi_ev_mbx_t  bfm_to_uvm;
 
     longint unsigned cycle_count = 0;
     always_ff @(posedge ACLK or negedge ARESETn) begin

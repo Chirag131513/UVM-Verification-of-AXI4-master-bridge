@@ -35,9 +35,9 @@ set RTL_SRCS "$RTL_DIR/sync_fifo.v \
 
 # Testbench Packages and Interfaces
 set TB_SRCS "$TB_DIR/packages/axi_types_pkg.sv \
-             $TB_DIR/packages/axi_vip_pkg.sv \
              $TB_DIR/interfaces/axi_interface.sv \
              $TB_DIR/interfaces/user_interface.sv \
+             $TB_DIR/packages/axi_vip_pkg.sv \
              $TB_DIR/bfms/axi_master_bfm.sv \
              $TB_DIR/bfms/axi_slave_bfm.sv \
              $TB_DIR/bfms/user_bfm.sv \

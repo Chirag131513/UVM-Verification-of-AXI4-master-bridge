@@ -11,7 +11,7 @@ class user_driver extends uvm_driver #(user_transaction);
     `uvm_component_utils(user_driver)
 
     user_agent_config cfg;
-    mailbox #(user_bfm_command) uvm_to_bfm;
+    user_cmd_mbx_t    uvm_to_bfm;
 
     function new(string name, uvm_component parent);
         super.new(name, parent);
@@ -22,7 +22,7 @@ class user_driver extends uvm_driver #(user_transaction);
         if (!uvm_config_db#(user_agent_config)::get(this, "", "cfg", cfg)) begin
             cfg = user_agent_config::type_id::create("cfg");
         end
-        if (!uvm_config_db#(mailbox #(user_bfm_command))::get(this, "", "uvm_to_bfm", uvm_to_bfm)) begin
+        if (!uvm_config_db#(user_cmd_mbx_t)::get(this, "", "uvm_to_bfm", uvm_to_bfm)) begin
             `uvm_fatal("USR_DRV", "uvm_to_bfm mailbox not found in config_db")
         end
     endfunction

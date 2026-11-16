@@ -37,9 +37,9 @@ RTL_FILES   := $(RTL_DIR)/sync_fifo.v \
                $(RTL_DIR)/master_top.v
 
 TB_FILES    := $(TB_DIR)/packages/axi_types_pkg.sv \
-               $(TB_DIR)/packages/axi_vip_pkg.sv \
                $(TB_DIR)/interfaces/axi_interface.sv \
                $(TB_DIR)/interfaces/user_interface.sv \
+               $(TB_DIR)/packages/axi_vip_pkg.sv \
                $(TB_DIR)/bfms/axi_master_bfm.sv \
                $(TB_DIR)/bfms/axi_slave_bfm.sv \
                $(TB_DIR)/bfms/user_bfm.sv \
@@ -51,6 +51,10 @@ TB_FILES    := $(TB_DIR)/packages/axi_types_pkg.sv \
 # ------------------------------------------------------------------------------
 XRUN_OPTS   := -64bit -sv -uvm -timescale 1ns/1ps -access +rwc
 XRUN_COV    := -coverage all -covoverwrite -covworkdir $(REPORTS_DIR)/coverage
+
+xrun-compile:
+	@mkdir -p $(REPORTS_DIR)/coverage $(REPORTS_DIR)/assertions
+	xrun $(XRUN_OPTS) -compile $(INCDIRS) $(RTL_FILES) $(TB_FILES)
 
 xrun:
 	@mkdir -p $(REPORTS_DIR)/coverage $(REPORTS_DIR)/assertions
@@ -80,4 +84,4 @@ clean:
 	rm -rf work INCA_libs xcelium.d xrun.history *.log *.vcd *.wlf tr_db.dir
 	rm -rf $(REPORTS_DIR)/*.log
 
-.PHONY: xrun vsim regression clean
+.PHONY: xrun xrun-compile vsim regression clean
