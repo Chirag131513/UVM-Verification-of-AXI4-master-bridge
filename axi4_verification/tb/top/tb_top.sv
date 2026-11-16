@@ -37,6 +37,14 @@ module tb_top;
         ARESETn = 1'b1;
     end
 
+    // Waveform Dumping for debug (GTKWave / SimVision / Verdi)
+    initial begin
+        if ($test$plusargs("DUMP_VCD") || $test$plusargs("WAVE")) begin
+            $dumpfile("axi4_tb.vcd");
+            $dumpvars(0, tb_top);
+        end
+    end
+
     // ------------------------------------------------------------------------
     // Physical Interfaces
     // ------------------------------------------------------------------------
