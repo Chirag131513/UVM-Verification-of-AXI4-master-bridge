@@ -43,4 +43,44 @@ class user_agent_config extends uvm_object;
     endfunction
 endclass : user_agent_config
 
+
+// ----------------------------------------------------------------------------
+// Mailbox Wrapper Classes for UVM Config DB Compatibility
+// ----------------------------------------------------------------------------
+class axi_cmd_mbx_wrapper extends uvm_object;
+    `uvm_object_utils(axi_cmd_mbx_wrapper)
+    axi_cmd_mbx_t mbx;
+    function new(string name = "axi_cmd_mbx_wrapper");
+        super.new(name);
+        mbx = new();
+    endfunction
+endclass : axi_cmd_mbx_wrapper
+
+class axi_ev_mbx_wrapper extends uvm_object;
+    `uvm_object_utils(axi_ev_mbx_wrapper)
+    axi_ev_mbx_t mbx;
+    function new(string name = "axi_ev_mbx_wrapper");
+        super.new(name);
+        mbx = new();
+    endfunction
+endclass : axi_ev_mbx_wrapper
+
+class user_cmd_mbx_wrapper extends uvm_object;
+    `uvm_object_utils(user_cmd_mbx_wrapper)
+    user_cmd_mbx_t mbx;
+    function new(string name = "user_cmd_mbx_wrapper");
+        super.new(name);
+        mbx = new();
+    endfunction
+endclass : user_cmd_mbx_wrapper
+
+class user_ev_mbx_wrapper extends uvm_object;
+    `uvm_object_utils(user_ev_mbx_wrapper)
+    user_ev_mbx_t mbx;
+    function new(string name = "user_ev_mbx_wrapper");
+        super.new(name);
+        mbx = new();
+    endfunction
+endclass : user_ev_mbx_wrapper
+
 `endif // AXI_AGENT_CONFIGS_SV

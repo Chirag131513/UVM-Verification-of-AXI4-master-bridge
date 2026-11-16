@@ -19,14 +19,17 @@ class axi_master_driver extends uvm_driver #(axi_transaction);
     endfunction
 
     function void build_phase(uvm_phase phase);
+        axi_cmd_mbx_wrapper u2b_wrap;
         super.build_phase(phase);
         if (!uvm_config_db#(axi_master_config)::get(this, "", "cfg", cfg)) begin
             cfg = axi_master_config::type_id::create("cfg");
         end
         // Only fetch mailbox if active
         if (cfg.is_active == UVM_ACTIVE) begin
-            if (!uvm_config_db#(axi_cmd_mbx_t)::get(this, "", "uvm_to_bfm", uvm_to_bfm)) begin
-                `uvm_fatal("MST_DRV", "uvm_to_bfm mailbox not found")
+            if (uvm_config_db#(axi_cmd_mbx_wrapper)::get(this, "", "uvm_to_bfm", u2b_wrap)) begin
+                uvm_to_bfm = u2b_wrap.mbx;
+            end else begin
+                `uvm_fatal("MST_DRV", "uvm_to_bfm mailbox wrapper not found")
             end
         end
     endfunction

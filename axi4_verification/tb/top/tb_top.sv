@@ -261,36 +261,36 @@ module tb_top;
     // ------------------------------------------------------------------------
     // Mailbox-Synchronized BFM Communication Handles
     // ------------------------------------------------------------------------
-    axi_cmd_mbx_t  slv_u2b;
-    axi_ev_mbx_t   slv_b2u;
-    user_cmd_mbx_t usr_u2b;
-    user_ev_mbx_t  usr_b2u;
+    axi_cmd_mbx_wrapper  slv_u2b_wrap;
+    axi_ev_mbx_wrapper   slv_b2u_wrap;
+    user_cmd_mbx_wrapper usr_u2b_wrap;
+    user_ev_mbx_wrapper  usr_b2u_wrap;
 
     // ------------------------------------------------------------------------
     // Configuration & UVM Test Kickoff
     // ------------------------------------------------------------------------
     initial begin
-        // Instantiate and wire mailboxes
-        slv_u2b = new();
-        slv_b2u = new();
-        usr_u2b = new();
-        usr_b2u = new();
+        // Instantiate mailbox wrappers
+        slv_u2b_wrap = new();
+        slv_b2u_wrap = new();
+        usr_u2b_wrap = new();
+        usr_b2u_wrap = new();
 
-        slave_bfm.uvm_to_bfm = slv_u2b;
-        slave_bfm.bfm_to_uvm = slv_b2u;
+        slave_bfm.uvm_to_bfm = slv_u2b_wrap.mbx;
+        slave_bfm.bfm_to_uvm = slv_b2u_wrap.mbx;
 
-        u_bfm.uvm_to_bfm = usr_u2b;
-        u_bfm.bfm_to_uvm = usr_b2u;
+        u_bfm.uvm_to_bfm = usr_u2b_wrap.mbx;
+        u_bfm.bfm_to_uvm = usr_b2u_wrap.mbx;
 
         // Populate UVM Config DB
         uvm_config_db#(virtual axi_interface.monitor_mp)::set(null, "*", "vif", axi_if.monitor_mp);
         uvm_config_db#(virtual user_interface.monitor_mp)::set(null, "*", "vif", user_if.monitor_mp);
 
-        uvm_config_db#(axi_cmd_mbx_t)::set(null, "*slave_agent*", "uvm_to_bfm", slv_u2b);
-        uvm_config_db#(axi_ev_mbx_t)::set(null, "*slave_agent*", "bfm_to_uvm", slv_b2u);
+        uvm_config_db#(axi_cmd_mbx_wrapper)::set(null, "*slave_agent*", "uvm_to_bfm", slv_u2b_wrap);
+        uvm_config_db#(axi_ev_mbx_wrapper)::set(null, "*slave_agent*", "bfm_to_uvm", slv_b2u_wrap);
 
-        uvm_config_db#(user_cmd_mbx_t)::set(null, "*user_agent*", "uvm_to_bfm", usr_u2b);
-        uvm_config_db#(user_ev_mbx_t)::set(null, "*user_agent*", "bfm_to_uvm", usr_b2u);
+        uvm_config_db#(user_cmd_mbx_wrapper)::set(null, "*user_agent*", "uvm_to_bfm", usr_u2b_wrap);
+        uvm_config_db#(user_ev_mbx_wrapper)::set(null, "*user_agent*", "bfm_to_uvm", usr_b2u_wrap);
 
         // Run default test (can be overridden via +UVM_TESTNAME)
         run_test("axi_directed_test");

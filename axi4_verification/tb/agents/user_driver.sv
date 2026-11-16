@@ -18,11 +18,14 @@ class user_driver extends uvm_driver #(user_transaction);
     endfunction
 
     function void build_phase(uvm_phase phase);
+        user_cmd_mbx_wrapper u2b_wrap;
         super.build_phase(phase);
         if (!uvm_config_db#(user_agent_config)::get(this, "", "cfg", cfg)) begin
             cfg = user_agent_config::type_id::create("cfg");
         end
-        if (!uvm_config_db#(user_cmd_mbx_t)::get(this, "", "uvm_to_bfm", uvm_to_bfm)) begin
+        if (uvm_config_db#(user_cmd_mbx_wrapper)::get(this, "", "uvm_to_bfm", u2b_wrap)) begin
+            uvm_to_bfm = u2b_wrap.mbx;
+        end else begin
             `uvm_fatal("USR_DRV", "uvm_to_bfm mailbox not found in config_db")
         end
     endfunction

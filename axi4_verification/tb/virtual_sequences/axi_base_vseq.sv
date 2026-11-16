@@ -23,8 +23,8 @@ class axi_base_vseq extends uvm_sequence;
         input bit [31:0] addr,
         input bit [31:0] total_bytes,
         input bit [1:0]  burst = 2'b01,
-        input bit [31:0] data[] = null,
-        input bit [3:0]  wstrb[] = null
+        input bit [31:0] data[] = '{},
+        input bit [3:0]  wstrb[] = '{}
     );
         user_transaction u_tx;
         u_tx = user_transaction::type_id::create("u_tx");
@@ -35,7 +35,7 @@ class axi_base_vseq extends uvm_sequence;
         u_tx.total_bytes = total_bytes;
         u_tx.burst       = burst;
 
-        if (data != null && data.size() > 0) begin
+        if (data.size() > 0) begin
             u_tx.tx_data = data;
         end else begin
             int n_words = (total_bytes + addr[1:0] + 3) / 4;
@@ -43,7 +43,7 @@ class axi_base_vseq extends uvm_sequence;
             for (int i = 0; i < n_words; i++) u_tx.tx_data[i] = $urandom();
         end
 
-        if (wstrb != null && wstrb.size() > 0) begin
+        if (wstrb.size() > 0) begin
             u_tx.tx_wstrb = wstrb;
         end else begin
             int n_words = (total_bytes + addr[1:0] + 3) / 4;
