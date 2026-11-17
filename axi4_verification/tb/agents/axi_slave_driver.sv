@@ -180,9 +180,14 @@ class axi_slave_driver extends uvm_driver #(axi_transaction);
         b_cmd.id           = id;
         eff_addr = (addr >= 32'hE000_0000) ? addr :
                    ((u_vif != null && u_vif.user_start_addr >= 32'hE000_0000) ? u_vif.user_start_addr : addr);
-        if (eff_addr >= 32'hF000_0000)      b_cmd.resp_code = AXI_RESP_DECERR;
-        else if (eff_addr >= 32'hE000_0000) b_cmd.resp_code = AXI_RESP_SLVERR;
-        else                                b_cmd.resp_code = cfg.default_resp;
+        if (axi_types_pkg::global_target_resp != AXI_RESP_OKAY)
+            b_cmd.resp_code = axi_types_pkg::global_target_resp;
+        else if (eff_addr >= 32'hF000_0000)
+            b_cmd.resp_code = AXI_RESP_DECERR;
+        else if (eff_addr >= 32'hE000_0000)
+            b_cmd.resp_code = AXI_RESP_SLVERR;
+        else
+            b_cmd.resp_code = cfg.default_resp;
         b_cmd.delay_cycles = (cfg.timing_profile == PROFILE_STRESS_STALL) ? 8 :
                              (cfg.timing_profile == PROFILE_RANDOM_DELAY) ? $urandom_range(0, 3) : 0;
         uvm_to_bfm.put(b_cmd);
@@ -202,9 +207,14 @@ class axi_slave_driver extends uvm_driver #(axi_transaction);
         r_cmd.burst_len    = ar_ev.burst_len;
         eff_addr = (ar_ev.addr >= 32'hE000_0000) ? ar_ev.addr :
                    ((u_vif != null && u_vif.user_start_addr >= 32'hE000_0000) ? u_vif.user_start_addr : ar_ev.addr);
-        if (eff_addr >= 32'hF000_0000)      r_cmd.resp_code = AXI_RESP_DECERR;
-        else if (eff_addr >= 32'hE000_0000) r_cmd.resp_code = AXI_RESP_SLVERR;
-        else                                r_cmd.resp_code = cfg.default_resp;
+        if (axi_types_pkg::global_target_resp != AXI_RESP_OKAY)
+            r_cmd.resp_code = axi_types_pkg::global_target_resp;
+        else if (eff_addr >= 32'hF000_0000)
+            r_cmd.resp_code = AXI_RESP_DECERR;
+        else if (eff_addr >= 32'hE000_0000)
+            r_cmd.resp_code = AXI_RESP_SLVERR;
+        else
+            r_cmd.resp_code = cfg.default_resp;
         r_cmd.delay_cycles = (cfg.timing_profile == PROFILE_STRESS_STALL) ? 6 :
                              (cfg.timing_profile == PROFILE_RANDOM_DELAY) ? $urandom_range(0, 3) : 0;
         r_cmd.data         = new[int'(ar_ev.burst_len) + 1];

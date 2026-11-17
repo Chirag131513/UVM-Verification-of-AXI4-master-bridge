@@ -368,6 +368,7 @@ class axi_coverage_vseq extends axi_base_vseq;
         // Phase 4: Response Code Sweep (OKAY, SLVERR, DECERR with distinct addresses)
         `uvm_info("VSEQ", "Phase 4: Response Code Sweep...", UVM_MEDIUM)
         // SLVERR (Address in 0xE000_0000 region: Write 0xE000_0000, Read 0xE000_0100)
+        axi_types_pkg::global_target_resp = AXI_RESP_SLVERR;
         send_user_write(32'hE000_0000, 4, 2'b01);
         #150ns;
         send_user_write(32'hE000_0000, 4, 2'b01);
@@ -378,6 +379,7 @@ class axi_coverage_vseq extends axi_base_vseq;
         #150ns;
 
         // DECERR (Address in 0xF000_0000 region: Write 0xF000_0000, Read 0xF000_0100)
+        axi_types_pkg::global_target_resp = AXI_RESP_DECERR;
         send_user_write(32'hF000_0000, 4, 2'b01);
         #150ns;
         send_user_write(32'hF000_0000, 4, 2'b01);
@@ -386,6 +388,9 @@ class axi_coverage_vseq extends axi_base_vseq;
         #150ns;
         send_user_read (32'hF000_0100, 4, 2'b01);
         #250ns;
+
+        // Reset response override to normal OKAY
+        axi_types_pkg::global_target_resp = AXI_RESP_OKAY;
 
         // Drain final bus handshakes
         #500ns;

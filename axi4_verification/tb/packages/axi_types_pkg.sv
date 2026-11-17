@@ -61,6 +61,9 @@ package axi_types_pkg;
         PROFILE_STRESS_STALL  = 2'b10
     } axi_timing_profile_e;
 
+    // Global Target Response Override for Systematic Coverage & Error Closure
+    axi_resp_e global_target_resp = AXI_RESP_OKAY;
+
     // ------------------------------------------------------------------------
     // BFM Mailbox Communication Structures
     // ------------------------------------------------------------------------

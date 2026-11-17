@@ -163,8 +163,10 @@ class axi_functional_coverage extends uvm_subscriber #(axi_transaction);
     axi_burst_e last_read_burst;
     axi_size_e  last_read_size;
 
-    bit [31:0]  aw_addr_q[$];
-    bit [3:0]   w_strb_q[$];
+    bit [31:0]  active_aw_addr;
+    bit [3:0]   active_w_strb;
+    bit         aw_seen = 0;
+    bit         w_seen  = 0;
     bit         is_first_w_beat = 1;
 
     // ------------------------------------------------------------------------
@@ -188,15 +190,16 @@ class axi_functional_coverage extends uvm_subscriber #(axi_transaction);
             cur_tx = t;
             cg_axi_trans.sample();
 
-            if (w_strb_q.size() > 0) begin
-                bit [3:0] s = w_strb_q.pop_front();
+            active_aw_addr = t.addr;
+            aw_seen = 1;
+            if (w_seen) begin
                 cur_tx = axi_transaction::type_id::create("cov_strobe_tx");
-                cur_tx.addr = t.addr;
+                cur_tx.addr = active_aw_addr;
                 cur_tx.wstrb = new[1];
-                cur_tx.wstrb[0] = s;
+                cur_tx.wstrb[0] = active_w_strb;
                 cg_data_strobes.sample();
-            end else begin
-                aw_addr_q.push_back(t.addr);
+                aw_seen = 0;
+                w_seen  = 0;
             end
         end else if (t.get_name() == "ar_tx") begin
             last_read_addr   = t.addr;
@@ -207,29 +210,26 @@ class axi_functional_coverage extends uvm_subscriber #(axi_transaction);
             cg_axi_trans.sample();
         end else if (t.get_name() == "w_tx" || t.wstrb.size() > 0) begin
             if (is_first_w_beat) begin
-                if (aw_addr_q.size() > 0) begin
-                    bit [31:0] a = aw_addr_q.pop_front();
+                active_w_strb = t.wstrb[0];
+                w_seen = 1;
+                if (aw_seen) begin
                     cur_tx = axi_transaction::type_id::create("cov_strobe_tx");
-                    cur_tx.addr = a;
+                    cur_tx.addr = active_aw_addr;
                     cur_tx.wstrb = new[1];
-                    cur_tx.wstrb[0] = t.wstrb[0];
+                    cur_tx.wstrb[0] = active_w_strb;
                     cg_data_strobes.sample();
-                end else begin
-                    w_strb_q.push_back(t.wstrb[0]);
+                    aw_seen = 0;
+                    w_seen  = 0;
                 end
                 is_first_w_beat = 0;
             end
-        end else if (t.get_name() == "b_tx") begin
-            is_first_w_beat = 1;
-            while (aw_addr_q.size() > 0 && w_strb_q.size() > 0) begin
-                bit [31:0] a = aw_addr_q.pop_front();
-                bit [3:0]  s = w_strb_q.pop_front();
-                cur_tx = axi_transaction::type_id::create("cov_strobe_tx");
-                cur_tx.addr = a;
-                cur_tx.wstrb = new[1];
-                cur_tx.wstrb[0] = s;
-                cg_data_strobes.sample();
+            if (t.wlast.size() > 0 && t.wlast[0]) begin
+                is_first_w_beat = 1;
             end
+        end else if (t.get_name() == "b_tx") begin
+            aw_seen = 0;
+            w_seen  = 0;
+            is_first_w_beat = 1;
             cur_tx = t;
             cur_tx.op_type = AXI_OP_WRITE;
             cur_tx.addr    = last_write_addr;
