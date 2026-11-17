@@ -52,10 +52,10 @@ xrun-compile:
 
 xrun:
 	@mkdir -p $(REPORTS_DIR)/coverage $(REPORTS_DIR)/assertions
-	-xrun $(XRUN_OPTS) $(INCDIRS) $(RTL_FILES) $(TB_FILES) \
+	xrun $(XRUN_OPTS) $(INCDIRS) $(RTL_FILES) $(TB_FILES) \
 		+UVM_TESTNAME=$(TEST) +UVM_VERBOSITY=$(VERBOSITY) -svseed $(SEED) \
 		$(if $(filter 1,$(COVERAGE)),$(XRUN_COV),) \
-		-l $(REPORTS_DIR)/$(TEST)_seed$(SEED).log
+		-l $(REPORTS_DIR)/$(TEST)_seed$(SEED).log || true
 
 # ------------------------------------------------------------------------------
 # Self-Contained UVM Native Coverage (Zero tool dependencies, no IMC required)
