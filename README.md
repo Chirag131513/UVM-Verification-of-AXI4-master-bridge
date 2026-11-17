@@ -8,7 +8,7 @@
 [![Regression](https://img.shields.io/badge/Regression-PASSED%20(0%20Errors)-brightgreen.svg)]()
 [![EDA Tool](https://img.shields.io/badge/EDA-Cadence%20Xcelium%2022.09%20%7C%20QuestaSim-purple.svg)]()
 
-> **Academic Project | Sep 2025 – Oct 2025**  
+> **Academic Project | Sep 2025 – Nov 2025**  
 > **Key Contributions & Portfolio Highlights:**
 > - **Modular UVM Verification IP (VIP)**: Developed a production-grade UVM VIP environment featuring Master/Slave active agents, virtual sequencers, and mailbox-synchronized Bus Functional Models (BFMs) to thoroughly verify memory transactions across all five independent AMBA AXI4 channels (AW, W, B, AR, R).
 > - **SVA Handshake Checkers & Coverage Closure**: Implemented comprehensive SystemVerilog Assertions (SVA) for cycle-accurate handshake safety, generated constrained-random burst transfers (up to 256 beats), and evaluated write data bus utilization (achieving up to **95.45%**), successfully closing functional coverage at **100.00%**.
@@ -358,4 +358,4 @@ make clean
 ---
 
 **Developed & Maintained by Chirag V Rao**  
-*Academic Project in Advanced ASIC/SoC Verification (Sep 2025 – Oct 2025)*
+*Academic Project in Advanced ASIC/SoC Verification (Sep 2025 – Nov 2025)*
