@@ -67,14 +67,14 @@ cov-gui:
 
 cov-html:
 	@mkdir -p $(REPORTS_DIR)/coverage_html
-	imc -batch -execcmd "load $(COV_RUN); report -html -detail -metrics all -all -out $(REPORTS_DIR)/coverage_html"
+	imc -load $(COV_RUN) -execcmd "report -html -detail -metrics all -all -out $(REPORTS_DIR)/coverage_html; exit"
 	@echo "Coverage HTML generated at $(REPORTS_DIR)/coverage_html/index.html"
 
 cov-text:
-	imc -batch -execcmd "load $(COV_RUN); report -summary"
+	imc -load $(COV_RUN) -execcmd "report -summary; exit"
 
 cov-detail:
-	imc -batch -execcmd "load $(COV_RUN); report -detail -metrics all -all -out $(REPORTS_DIR)/coverage_detail.txt"
+	imc -load $(COV_RUN) -execcmd "report -detail -metrics all -all -out $(REPORTS_DIR)/coverage_detail.txt; exit"
 	@echo "Coverage detail report written to $(REPORTS_DIR)/coverage_detail.txt"
 
 # ------------------------------------------------------------------------------
