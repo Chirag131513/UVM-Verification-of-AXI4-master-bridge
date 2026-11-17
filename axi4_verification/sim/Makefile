@@ -4,7 +4,7 @@
 # Description: Universal Makefile for Cadence Xcelium and Siemens QuestaSim
 # ==============================================================================
 
-TEST        ?= axi_directed_test
+TEST        ?= axi_regression_test
 SEED        ?= 1
 VERBOSITY   ?= UVM_LOW
 COVERAGE    ?= 1
