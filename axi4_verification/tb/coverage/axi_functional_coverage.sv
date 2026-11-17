@@ -112,7 +112,20 @@ class axi_functional_coverage extends uvm_subscriber #(axi_transaction);
             bins PARTIAL_LOWER  = {4'b0011, 4'b0111};
         }
 
-        cross_align_x_strb: cross cp_addr_alignment_w, cp_wstrb_first_beat;
+        cross_align_x_strb: cross cp_addr_alignment_w, cp_wstrb_first_beat {
+            // AXI4 Protocol Rule: WSTRB bits below the start address are illegal on beat 0
+            ignore_bins unaligned_offset1_illegal = binsof(cp_addr_alignment_w.OFFSET_1) &&
+                                                   (binsof(cp_wstrb_first_beat.SINGLE_LANE_0) ||
+                                                    binsof(cp_wstrb_first_beat.FULL_STROBE) ||
+                                                    binsof(cp_wstrb_first_beat.PARTIAL_LOWER));
+            ignore_bins unaligned_offset2_illegal = binsof(cp_addr_alignment_w.OFFSET_2) &&
+                                                   (binsof(cp_wstrb_first_beat.SINGLE_LANE_0) ||
+                                                    binsof(cp_wstrb_first_beat.SINGLE_LANE_1) ||
+                                                    binsof(cp_wstrb_first_beat.FULL_STROBE) ||
+                                                    binsof(cp_wstrb_first_beat.PARTIAL_LOWER));
+            ignore_bins unaligned_offset3_illegal = binsof(cp_addr_alignment_w.OFFSET_3) &&
+                                                   !binsof(cp_wstrb_first_beat.SINGLE_LANE_3);
+        }
     endgroup
 
     bit [31:0]  last_write_addr;
