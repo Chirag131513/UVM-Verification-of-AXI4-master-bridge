@@ -28,11 +28,11 @@ class axi_functional_coverage extends uvm_subscriber #(axi_transaction);
             bins READ  = {AXI_OP_READ};
         }
 
-        // Burst Type
+        // Burst Type (DUT master bridge is an INCR-only master bridge; addr_issuer.v:33 hardwires AXBURST=2'b01)
         cp_burst_type: coverpoint cur_tx.burst {
-            bins FIXED = {AXI_BURST_FIXED};
             bins INCR  = {AXI_BURST_INCR};
-            bins WRAP  = {AXI_BURST_WRAP};
+            ignore_bins unsupp_fixed = {AXI_BURST_FIXED};
+            ignore_bins unsupp_wrap  = {AXI_BURST_WRAP};
         }
 
         // Burst Length (AxLEN: 0 to 255 beats)
@@ -45,11 +45,12 @@ class axi_functional_coverage extends uvm_subscriber #(axi_transaction);
             bins MAX_256_BEAT  = {8'd255};
         }
 
-        // Transfer Size
+        // Transfer Size (DUT 32-bit bus master hardwires AXSIZE=2'b010 (4 bytes); addr_issuer.v:29)
+        // Smaller transfers are signaled via WSTRB byte lane strobes
         cp_size: coverpoint cur_tx.size {
-            bins BYTE_1 = {AXI_SIZE_1_BYTE};
-            bins BYTE_2 = {AXI_SIZE_2_BYTES};
             bins BYTE_4 = {AXI_SIZE_4_BYTES};
+            ignore_bins unsupp_byte1 = {AXI_SIZE_1_BYTE};
+            ignore_bins unsupp_byte2 = {AXI_SIZE_2_BYTES};
         }
 
         // Start Address Alignment (Lower 2 bits for 32-bit bus)

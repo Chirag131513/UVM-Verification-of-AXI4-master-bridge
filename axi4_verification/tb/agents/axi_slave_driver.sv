@@ -164,18 +164,20 @@ class axi_slave_driver extends uvm_driver #(axi_transaction);
             end
 
             // Issue B response after last beat
-            schedule_write_response(aw.id);
+            schedule_write_response(aw.id, aw.addr);
         end
     endtask
 
     // ------------------------------------------------------------------------
     // Dispatch B Response Command
     // ------------------------------------------------------------------------
-    task schedule_write_response(bit [3:0] id);
+    task schedule_write_response(bit [3:0] id, bit [31:0] addr = 32'h0);
         axi_bfm_command b_cmd;
         b_cmd.channel_id   = AXI_CH_B;
         b_cmd.id           = id;
-        b_cmd.resp_code    = cfg.default_resp;
+        if (addr >= 32'hF000_0000)      b_cmd.resp_code = AXI_RESP_DECERR;
+        else if (addr >= 32'hE000_0000) b_cmd.resp_code = AXI_RESP_SLVERR;
+        else                            b_cmd.resp_code = cfg.default_resp;
         b_cmd.delay_cycles = (cfg.timing_profile == PROFILE_STRESS_STALL) ? 8 :
                              (cfg.timing_profile == PROFILE_RANDOM_DELAY) ? $urandom_range(0, 3) : 0;
         uvm_to_bfm.put(b_cmd);
@@ -192,7 +194,9 @@ class axi_slave_driver extends uvm_driver #(axi_transaction);
         r_cmd.channel_id   = AXI_CH_R;
         r_cmd.id           = ar_ev.id;
         r_cmd.burst_len    = ar_ev.burst_len;
-        r_cmd.resp_code    = cfg.default_resp;
+        if (ar_ev.addr >= 32'hF000_0000)      r_cmd.resp_code = AXI_RESP_DECERR;
+        else if (ar_ev.addr >= 32'hE000_0000) r_cmd.resp_code = AXI_RESP_SLVERR;
+        else                                  r_cmd.resp_code = cfg.default_resp;
         r_cmd.delay_cycles = (cfg.timing_profile == PROFILE_STRESS_STALL) ? 6 :
                              (cfg.timing_profile == PROFILE_RANDOM_DELAY) ? $urandom_range(0, 3) : 0;
         r_cmd.data         = new[int'(ar_ev.burst_len) + 1];

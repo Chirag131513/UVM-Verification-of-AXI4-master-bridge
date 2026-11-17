@@ -60,6 +60,9 @@ xrun:
 # ------------------------------------------------------------------------------
 # Self-Contained UVM Native Coverage (Zero tool dependencies, no IMC required)
 # ------------------------------------------------------------------------------
+cov-run:
+	$(MAKE) xrun TEST=axi_coverage_closure_test
+
 cov-view:
 	@cat $(REPORTS_DIR)/coverage_summary.txt
 
@@ -107,4 +110,4 @@ clean:
 	rm -rf work INCA_libs xcelium.d xrun.history *.log *.vcd *.wlf tr_db.dir
 	rm -rf $(REPORTS_DIR)/*.log
 
-.PHONY: xrun xrun-compile cov-view cov-browser cov-gui cov-html cov-text cov-detail vsim regression clean
+.PHONY: xrun xrun-compile cov-run cov-view cov-browser cov-gui cov-html cov-text cov-detail vsim regression clean

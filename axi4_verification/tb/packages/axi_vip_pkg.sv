@@ -71,6 +71,7 @@ package axi_vip_pkg;
     `include "axi_directed_test.sv"
     `include "axi_random_test.sv"
     `include "axi_stress_test.sv"
+    `include "axi_coverage_closure_test.sv"
 
 endpackage : axi_vip_pkg
 

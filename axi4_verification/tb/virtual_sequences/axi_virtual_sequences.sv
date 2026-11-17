@@ -234,4 +234,115 @@ class axi_throughput_vseq extends axi_base_vseq;
     endtask
 endclass : axi_throughput_vseq
 
+
+// ----------------------------------------------------------------------------
+// 8. axi_coverage_vseq: Systematic stimulus closing 100% of functional coverage
+// ----------------------------------------------------------------------------
+class axi_coverage_vseq extends axi_base_vseq;
+    `uvm_object_utils(axi_coverage_vseq)
+
+    function new(string name = "axi_coverage_vseq");
+        super.new(name);
+    endfunction
+
+    virtual task body();
+        `uvm_info("VSEQ", "Executing axi_coverage_vseq: Systematic 100% Coverage Closure Sequence...", UVM_LOW)
+
+        // Phase 1: All Burst Lengths (Single, Short, 16-beat, Medium, Long, 256-beat)
+        `uvm_info("VSEQ", "Phase 1: Burst Length Sweep (1 to 256 beats)...", UVM_MEDIUM)
+        // 1. Single beat (4 bytes -> len=0)
+        send_user_write(32'h1000_0000, 4, 2'b01);
+        send_user_read (32'h1000_0000, 4, 2'b01);
+        #100ns;
+
+        // 2. Short burst (16 bytes -> 4 beats, len=3)
+        send_user_write(32'h1000_0010, 16, 2'b01);
+        send_user_read (32'h1000_0010, 16, 2'b01);
+        #150ns;
+
+        // 3. Exact 16 beats (64 bytes -> len=15)
+        send_user_write(32'h1000_0040, 64, 2'b01);
+        send_user_read (32'h1000_0040, 64, 2'b01);
+        #250ns;
+
+        // 4. Medium burst (128 bytes -> 32 beats, len=31)
+        send_user_write(32'h1000_0100, 128, 2'b01);
+        send_user_read (32'h1000_0100, 128, 2'b01);
+        #400ns;
+
+        // 5. Long burst (512 bytes -> 128 beats, len=127)
+        send_user_write(32'h1000_0200, 512, 2'b01);
+        send_user_read (32'h1000_0200, 512, 2'b01);
+        #800ns;
+
+        // 6. Max 256 beats (1024 bytes -> 256 beats, len=255)
+        send_user_write(32'h1000_0400, 1024, 2'b01);
+        send_user_read (32'h1000_0400, 1024, 2'b01);
+        #1500ns;
+
+        // Phase 2: Address Alignments (0, 1, 2, 3) and Strobe Patterns
+        `uvm_info("VSEQ", "Phase 2: Address Alignment & Strobe Pattern Sweep...", UVM_MEDIUM)
+        // Offset 0: Aligned, Full Strobe (0xF)
+        send_user_write(32'h2000_0000, 16, 2'b01);
+        send_user_read (32'h2000_0000, 16, 2'b01);
+        #150ns;
+
+        // Offset 1: Unaligned 1 byte offset
+        send_user_write(32'h2000_0001, 15, 2'b01);
+        send_user_read (32'h2000_0001, 15, 2'b01);
+        #150ns;
+
+        // Offset 2: Unaligned 2 bytes offset
+        send_user_write(32'h2000_0002, 14, 2'b01);
+        send_user_read (32'h2000_0002, 14, 2'b01);
+        #150ns;
+
+        // Offset 3: Unaligned 3 bytes offset
+        send_user_write(32'h2000_0003, 13, 2'b01);
+        send_user_read (32'h2000_0003, 13, 2'b01);
+        #150ns;
+
+        // Specific Strobe Patterns: Single byte writes
+        send_user_write(32'h2000_0010, 1, 2'b01); // Lane 0 (0x1)
+        send_user_write(32'h2000_0011, 1, 2'b01); // Lane 1 (0x2)
+        send_user_write(32'h2000_0012, 1, 2'b01); // Lane 2 (0x4)
+        send_user_write(32'h2000_0013, 1, 2'b01); // Lane 3 (0x8)
+        #200ns;
+
+        // Partial lower (0x3, 0x7): 2-byte and 3-byte writes
+        send_user_write(32'h2000_0020, 2, 2'b01); // Strobe 0x3
+        send_user_write(32'h2000_0030, 3, 2'b01); // Strobe 0x7
+        #200ns;
+
+        // Phase 3: 4KB Page Boundary Proximity
+        `uvm_info("VSEQ", "Phase 3: 4KB Boundary Proximity Sweep...", UVM_MEDIUM)
+        // Far from 4KB boundary
+        send_user_write(32'h3000_0100, 16, 2'b01);
+        send_user_read (32'h3000_0100, 16, 2'b01);
+        #150ns;
+
+        // Near 4KB start
+        send_user_write(32'h3000_0F40, 16, 2'b01);
+        send_user_read (32'h3000_0F40, 16, 2'b01);
+        #150ns;
+
+        // At 4KB border (crosses into next page)
+        send_user_write(32'h3000_0FF0, 32, 2'b01);
+        send_user_read (32'h3000_0FF0, 32, 2'b01);
+        #250ns;
+
+        // Phase 4: Response Code Sweep (OKAY, SLVERR, DECERR)
+        `uvm_info("VSEQ", "Phase 4: Response Code Sweep...", UVM_MEDIUM)
+        // SLVERR (Address in 0xE000_0000 region)
+        send_user_write(32'hE000_0000, 16, 2'b01);
+        send_user_read (32'hE000_0000, 16, 2'b01);
+        #200ns;
+
+        // DECERR (Address in 0xF000_0000 region)
+        send_user_write(32'hF000_0000, 16, 2'b01);
+        send_user_read (32'hF000_0000, 16, 2'b01);
+        #300ns;
+    endtask
+endclass : axi_coverage_vseq
+
 `endif // AXI_VIRTUAL_SEQUENCES_SV
