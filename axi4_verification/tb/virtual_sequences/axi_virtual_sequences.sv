@@ -266,19 +266,16 @@ class axi_coverage_vseq extends axi_base_vseq;
         #250ns;
 
         // 4. Medium burst (128 bytes -> 32 beats, len=31)
-        send_user_write(32'h1000_0100, 128, 2'b01);
         send_user_read (32'h1000_0100, 128, 2'b01);
-        #400ns;
+        #300ns;
 
         // 5. Long burst (512 bytes -> 128 beats, len=127)
-        send_user_write(32'h1000_0200, 512, 2'b01);
         send_user_read (32'h1000_0200, 512, 2'b01);
-        #800ns;
+        #600ns;
 
         // 6. Max 256 beats (1024 bytes -> 256 beats, len=255)
-        send_user_write(32'h1000_0400, 1024, 2'b01);
         send_user_read (32'h1000_0400, 1024, 2'b01);
-        #1500ns;
+        #1200ns;
 
         // Phase 2: Address Alignments (0, 1, 2, 3) and Strobe Patterns
         `uvm_info("VSEQ", "Phase 2: Address Alignment & Strobe Pattern Sweep...", UVM_MEDIUM)

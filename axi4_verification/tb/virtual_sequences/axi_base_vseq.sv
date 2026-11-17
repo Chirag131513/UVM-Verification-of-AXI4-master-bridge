@@ -49,8 +49,15 @@ class axi_base_vseq extends uvm_sequence;
             int n_words = (total_bytes + addr[1:0] + 3) / 4;
             u_tx.tx_wstrb = new[n_words];
             for (int i = 0; i < n_words; i++) u_tx.tx_wstrb[i] = 4'b1111;
-            // Mask first beat according to unaligned offset
-            u_tx.tx_wstrb[0] = 4'b1111 << addr[1:0];
+            // Mask first beat according to unaligned offset and transfer byte count
+            if (total_bytes < 4) begin
+                bit [3:0] byte_mask;
+                byte_mask = (total_bytes == 1) ? 4'b0001 :
+                            (total_bytes == 2) ? 4'b0011 : 4'b0111;
+                u_tx.tx_wstrb[0] = (byte_mask << addr[1:0]) & 4'b1111;
+            end else begin
+                u_tx.tx_wstrb[0] = (4'b1111 << addr[1:0]) & 4'b1111;
+            end
         end
 
         finish_item(u_tx);

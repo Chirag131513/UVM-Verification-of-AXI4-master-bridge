@@ -115,7 +115,15 @@ class axi_functional_coverage extends uvm_subscriber #(axi_transaction);
         cross_align_x_strb: cross cp_addr_alignment_w, cp_wstrb_first_beat;
     endgroup
 
-    bit [31:0] last_write_addr;
+    bit [31:0]  last_write_addr;
+    bit [7:0]   last_write_len;
+    axi_burst_e last_write_burst;
+    axi_size_e  last_write_size;
+
+    bit [31:0]  last_read_addr;
+    bit [7:0]   last_read_len;
+    axi_burst_e last_read_burst;
+    axi_size_e  last_read_size;
 
     // ------------------------------------------------------------------------
     // Constructor
@@ -130,18 +138,43 @@ class axi_functional_coverage extends uvm_subscriber #(axi_transaction);
     // Subscriber Write Implementation
     // ------------------------------------------------------------------------
     virtual function void write(axi_transaction t);
-        cur_tx = t;
         if (t.get_name() == "aw_tx") begin
-            last_write_addr = t.addr;
+            last_write_addr  = t.addr;
+            last_write_len   = t.len;
+            last_write_burst = t.burst;
+            last_write_size  = t.size;
+            cur_tx = t;
             cg_axi_trans.sample();
         end else if (t.get_name() == "ar_tx") begin
+            last_read_addr   = t.addr;
+            last_read_len    = t.len;
+            last_read_burst  = t.burst;
+            last_read_size   = t.size;
+            cur_tx = t;
             cg_axi_trans.sample();
         end else if (t.get_name() == "w_tx" || t.wstrb.size() > 0) begin
+            cur_tx = t;
             cur_tx.addr = last_write_addr;
             cg_data_strobes.sample();
         end else if (t.get_name() == "b_tx") begin
+            cur_tx = t;
+            cur_tx.op_type = AXI_OP_WRITE;
+            cur_tx.addr    = last_write_addr;
+            cur_tx.len     = last_write_len;
+            cur_tx.burst   = last_write_burst;
+            cur_tx.size    = last_write_size;
+            cg_axi_trans.sample();
+        end else if (t.get_name() == "r_tx") begin
+            cur_tx = t;
+            cur_tx.op_type = AXI_OP_READ;
+            cur_tx.addr    = last_read_addr;
+            cur_tx.len     = last_read_len;
+            cur_tx.burst   = last_read_burst;
+            cur_tx.size    = last_read_size;
+            cur_tx.bresp   = t.rresp; // map read response code into bresp field for cp_response
             cg_axi_trans.sample();
         end else begin
+            cur_tx = t;
             cg_axi_trans.sample();
             if (t.wstrb.size() > 0) cg_data_strobes.sample();
         end
