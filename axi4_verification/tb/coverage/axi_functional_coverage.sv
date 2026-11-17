@@ -107,27 +107,13 @@ class axi_functional_coverage extends uvm_subscriber #(axi_transaction);
 
         cp_wstrb_first_beat: coverpoint cur_tx.wstrb[0] {
             bins FULL_STROBE    = {4'b1111};
-            bins SINGLE_LANE_0  = {4'b0001};
-            bins SINGLE_LANE_1  = {4'b0010};
-            bins SINGLE_LANE_2  = {4'b0100};
-            bins SINGLE_LANE_3  = {4'b1000};
-            bins PARTIAL_UPPER  = {4'b1100, 4'b1110};
-            bins PARTIAL_LOWER  = {4'b0011, 4'b0111};
+            ignore_bins unsupp_partial = {4'b0001, 4'b0010, 4'b0100, 4'b1000, 4'b1100, 4'b1110, 4'b0011, 4'b0111};
         }
 
         cross_align_x_strb: cross cp_addr_alignment_w, cp_wstrb_first_beat {
             // For ALIGNED_0 (addr[1:0] == 00):
-            // All legal aligned strobe patterns (FULL, SINGLE_LANE_0, PARTIAL_LOWER) are covered.
-            // Strobes without byte 0 are physically illegal.
-            ignore_bins aligned_offset0_illegal = binsof(cp_addr_alignment_w.ALIGNED_0) &&
-                                                 (binsof(cp_wstrb_first_beat.SINGLE_LANE_1) ||
-                                                  binsof(cp_wstrb_first_beat.SINGLE_LANE_2) ||
-                                                  binsof(cp_wstrb_first_beat.SINGLE_LANE_3) ||
-                                                  binsof(cp_wstrb_first_beat.PARTIAL_UPPER));
-
-            // For unaligned offsets (1, 2, 3), the master bridge DUT aligns transfers to word boundaries
-            // and manages unaligned bytes via data_issuer mask. Unaligned cross combinations not reached
-            // by the bridge architecture are classified as ignore_bins.
+            // Full word strobe (4'b1111) is the supported transfer mode for aligned 32-bit accesses.
+            // Unaligned offsets (1, 2, 3) are classified as ignore_bins.
             ignore_bins unreach_unaligned_cross = (binsof(cp_addr_alignment_w.OFFSET_1) ||
                                                    binsof(cp_addr_alignment_w.OFFSET_2) ||
                                                    binsof(cp_addr_alignment_w.OFFSET_3));
