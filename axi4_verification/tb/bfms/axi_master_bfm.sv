@@ -85,8 +85,8 @@ interface axi_master_bfm #(
     axi_cmd_mbx_t uvm_to_bfm;
     axi_ev_mbx_t  bfm_to_uvm;
 
-    longint unsigned cycle_count = 0;
-    always_ff @(posedge ACLK or negedge ARESETn) begin
+    longint unsigned cycle_count;
+    always @(posedge ACLK or negedge ARESETn) begin
         if (!ARESETn) cycle_count <= 0;
         else          cycle_count <= cycle_count + 1;
     end

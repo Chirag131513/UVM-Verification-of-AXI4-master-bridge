@@ -60,8 +60,8 @@ class axi_master_monitor extends uvm_monitor;
     task cycle_counter();
         forever begin
             @(vif.cb_mon);
-            if (!vif.ARESETn) cycle_count <= 0;
-            else              cycle_count <= cycle_count + 1;
+            if (!vif.ARESETn) cycle_count = 0;
+            else              cycle_count = cycle_count + 1;
         end
     endtask
 
