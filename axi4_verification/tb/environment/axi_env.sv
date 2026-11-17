@@ -83,6 +83,9 @@ class axi_env extends uvm_env;
         if (cfg.has_coverage) begin
             master_agent.mon.aw_ap.connect(coverage_inst.analysis_export);
             master_agent.mon.ar_ap.connect(coverage_inst.analysis_export);
+            master_agent.mon.w_ap.connect(coverage_inst.analysis_export);
+            master_agent.mon.b_ap.connect(coverage_inst.analysis_export);
+            master_agent.mon.r_ap.connect(coverage_inst.analysis_export);
         end
     endfunction
 

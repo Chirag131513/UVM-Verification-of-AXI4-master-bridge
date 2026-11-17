@@ -58,6 +58,15 @@ xrun:
 		-l $(REPORTS_DIR)/$(TEST)_seed$(SEED).log
 
 # ------------------------------------------------------------------------------
+# Self-Contained UVM Native Coverage (Zero tool dependencies, no IMC required)
+# ------------------------------------------------------------------------------
+cov-view:
+	@cat $(REPORTS_DIR)/coverage_summary.txt
+
+cov-browser:
+	firefox $(REPORTS_DIR)/coverage_report.html &
+
+# ------------------------------------------------------------------------------
 # Cadence Coverage Analysis (IMC - Integrated Metrics Center)
 # ------------------------------------------------------------------------------
 COV_RUN ?= $(REPORTS_DIR)/coverage/scope/test_sv1
@@ -98,4 +107,4 @@ clean:
 	rm -rf work INCA_libs xcelium.d xrun.history *.log *.vcd *.wlf tr_db.dir
 	rm -rf $(REPORTS_DIR)/*.log
 
-.PHONY: xrun xrun-compile cov-gui cov-html cov-text cov-detail vsim regression clean
+.PHONY: xrun xrun-compile cov-view cov-browser cov-gui cov-html cov-text cov-detail vsim regression clean
