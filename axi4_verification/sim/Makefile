@@ -67,7 +67,13 @@ cov-view:
 	@cat $(REPORTS_DIR)/coverage_summary.txt
 
 cov-browser:
-	firefox $(REPORTS_DIR)/coverage_report.html &
+	@REPORT_PATH=$$(cd $(REPORTS_DIR) && pwd)/coverage_report.html; \
+	echo "Opening coverage dashboard: file://$$REPORT_PATH"; \
+	if command -v xdg-open >/dev/null 2>&1; then \
+		xdg-open "$$REPORT_PATH" >/dev/null 2>&1 & \
+	else \
+		firefox "file://$$REPORT_PATH" >/dev/null 2>&1 & \
+	fi
 
 # ------------------------------------------------------------------------------
 # Cadence Coverage Analysis (IMC - Integrated Metrics Center)

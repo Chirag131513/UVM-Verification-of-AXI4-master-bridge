@@ -267,15 +267,15 @@ class axi_coverage_vseq extends axi_base_vseq;
 
         // 4. Medium burst (128 bytes -> 32 beats, len=31)
         send_user_read (32'h1000_0100, 128, 2'b01);
-        #300ns;
+        #500ns;
 
         // 5. Long burst (512 bytes -> 128 beats, len=127)
         send_user_read (32'h1000_0200, 512, 2'b01);
-        #600ns;
+        #1600ns;
 
         // 6. Max 256 beats (1024 bytes -> 256 beats, len=255)
         send_user_read (32'h1000_0400, 1024, 2'b01);
-        #1200ns;
+        #3600ns;
 
         // Phase 2: Address Alignments (0, 1, 2, 3) and Strobe Patterns
         `uvm_info("VSEQ", "Phase 2: Address Alignment & Strobe Pattern Sweep...", UVM_MEDIUM)
@@ -284,31 +284,31 @@ class axi_coverage_vseq extends axi_base_vseq;
         send_user_read (32'h2000_0000, 16, 2'b01);
         #150ns;
 
-        // Offset 1: Unaligned 1 byte offset
+        // Offset 1: Unaligned 1 byte offset (Strobe 0xE, partial upper)
         send_user_write(32'h2000_0001, 15, 2'b01);
         send_user_read (32'h2000_0001, 15, 2'b01);
         #150ns;
 
-        // Offset 2: Unaligned 2 bytes offset
+        // Offset 2: Unaligned 2 bytes offset (Strobe 0xC, partial upper)
         send_user_write(32'h2000_0002, 14, 2'b01);
         send_user_read (32'h2000_0002, 14, 2'b01);
         #150ns;
 
-        // Offset 3: Unaligned 3 bytes offset
+        // Offset 3: Unaligned 3 bytes offset (Strobe 0x8, single lane 3)
         send_user_write(32'h2000_0003, 13, 2'b01);
         send_user_read (32'h2000_0003, 13, 2'b01);
         #150ns;
 
         // Specific Strobe Patterns: Single byte writes
-        send_user_write(32'h2000_0010, 1, 2'b01); // Lane 0 (0x1)
-        send_user_write(32'h2000_0011, 1, 2'b01); // Lane 1 (0x2)
-        send_user_write(32'h2000_0012, 1, 2'b01); // Lane 2 (0x4)
-        send_user_write(32'h2000_0013, 1, 2'b01); // Lane 3 (0x8)
+        send_user_write(32'h2000_0010, 1, 2'b01); // Offset 0, Lane 0 (0x1)
+        send_user_write(32'h2000_0011, 1, 2'b01); // Offset 1, Lane 1 (0x2)
+        send_user_write(32'h2000_0012, 1, 2'b01); // Offset 2, Lane 2 (0x4)
+        send_user_write(32'h2000_0013, 1, 2'b01); // Offset 3, Lane 3 (0x8)
         #200ns;
 
         // Partial lower (0x3, 0x7): 2-byte and 3-byte writes
-        send_user_write(32'h2000_0020, 2, 2'b01); // Strobe 0x3
-        send_user_write(32'h2000_0030, 3, 2'b01); // Strobe 0x7
+        send_user_write(32'h2000_0020, 2, 2'b01); // Offset 0, Strobe 0x3
+        send_user_write(32'h2000_0030, 3, 2'b01); // Offset 0, Strobe 0x7
         #200ns;
 
         // Phase 3: 4KB Page Boundary Proximity
@@ -331,13 +331,13 @@ class axi_coverage_vseq extends axi_base_vseq;
         // Phase 4: Response Code Sweep (OKAY, SLVERR, DECERR)
         `uvm_info("VSEQ", "Phase 4: Response Code Sweep...", UVM_MEDIUM)
         // SLVERR (Address in 0xE000_0000 region)
-        send_user_write(32'hE000_0000, 16, 2'b01);
-        send_user_read (32'hE000_0000, 16, 2'b01);
+        send_user_write(32'hE000_0000, 4, 2'b01);
+        send_user_read (32'hE000_0000, 4, 2'b01);
         #200ns;
 
         // DECERR (Address in 0xF000_0000 region)
-        send_user_write(32'hF000_0000, 16, 2'b01);
-        send_user_read (32'hF000_0000, 16, 2'b01);
+        send_user_write(32'hF000_0000, 4, 2'b01);
+        send_user_read (32'hF000_0000, 4, 2'b01);
         #300ns;
     endtask
 endclass : axi_coverage_vseq
