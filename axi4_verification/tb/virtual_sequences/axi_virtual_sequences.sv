@@ -290,99 +290,102 @@ class axi_coverage_vseq extends axi_base_vseq;
         // Offset 0: full (0xF), single-lane 0 (0x1), partial-lower (0x3, 0x7)
         strobe_mask[0] = 4'b1111;
         send_user_write(32'h2000_0010, 4, 2'b01, strobe_data, strobe_mask);
-        #50ns;
+        #150ns;
         send_user_write(32'h2000_0010, 4, 2'b01, strobe_data, strobe_mask);
-        #50ns;
+        #150ns;
 
         strobe_mask[0] = 4'b0001;
         send_user_write(32'h2000_0020, 1, 2'b01, strobe_data, strobe_mask);
-        #50ns;
+        #150ns;
         send_user_write(32'h2000_0020, 1, 2'b01, strobe_data, strobe_mask);
-        #50ns;
+        #150ns;
 
         strobe_mask[0] = 4'b0011;
         send_user_write(32'h2000_0030, 2, 2'b01, strobe_data, strobe_mask);
-        #50ns;
+        #150ns;
         send_user_write(32'h2000_0030, 2, 2'b01, strobe_data, strobe_mask);
-        #50ns;
+        #150ns;
 
         strobe_mask[0] = 4'b0111;
         send_user_write(32'h2000_0030, 3, 2'b01, strobe_data, strobe_mask);
-        #50ns;
+        #150ns;
         send_user_write(32'h2000_0030, 3, 2'b01, strobe_data, strobe_mask);
-        #50ns;
+        #150ns;
 
         // Offset 1: single-lane 1 (0x2), partial-upper (0xE)
         strobe_mask[0] = 4'b0010;
         send_user_write(32'h2000_0041, 1, 2'b01, strobe_data, strobe_mask);
-        #50ns;
+        #150ns;
         send_user_write(32'h2000_0041, 1, 2'b01, strobe_data, strobe_mask);
-        #50ns;
+        #150ns;
 
         strobe_mask[0] = 4'b1110;
         send_user_write(32'h2000_0051, 3, 2'b01, strobe_data, strobe_mask);
-        #50ns;
+        #150ns;
         send_user_write(32'h2000_0051, 3, 2'b01, strobe_data, strobe_mask);
-        #50ns;
+        #150ns;
 
         // Offset 2: single-lane 2 (0x4), partial-upper (0xC)
         strobe_mask[0] = 4'b0100;
         send_user_write(32'h2000_0062, 1, 2'b01, strobe_data, strobe_mask);
-        #50ns;
+        #150ns;
         send_user_write(32'h2000_0062, 1, 2'b01, strobe_data, strobe_mask);
-        #50ns;
+        #150ns;
 
         strobe_mask[0] = 4'b1100;
         send_user_write(32'h2000_0072, 2, 2'b01, strobe_data, strobe_mask);
-        #50ns;
+        #150ns;
         send_user_write(32'h2000_0072, 2, 2'b01, strobe_data, strobe_mask);
-        #50ns;
+        #150ns;
 
         // Offset 3: single-lane 3 (0x8)
         strobe_mask[0] = 4'b1000;
         send_user_write(32'h2000_0083, 1, 2'b01, strobe_data, strobe_mask);
-        #50ns;
+        #150ns;
         send_user_write(32'h2000_0083, 1, 2'b01, strobe_data, strobe_mask);
         #200ns;
 
-        // Phase 3: 4KB Page Boundary Proximity
+        // Phase 3: 4KB Page Boundary Proximity (distinct addresses prevent RAW hazard stalls)
         `uvm_info("VSEQ", "Phase 3: 4KB Boundary Proximity Sweep...", UVM_MEDIUM)
         // Far from 4KB boundary
         send_user_write(32'h3000_0100, 4, 2'b01);
-        send_user_read (32'h3000_0100, 4, 2'b01);
+        #150ns;
+        send_user_read (32'h3000_0200, 4, 2'b01);
         #150ns;
 
         // Near 4KB start
         send_user_write(32'h3000_0F40, 4, 2'b01);
-        send_user_read (32'h3000_0F40, 4, 2'b01);
+        #150ns;
+        send_user_read (32'h3000_0F60, 4, 2'b01);
         #150ns;
 
         // At 4KB border (crosses into next page)
         send_user_write(32'h3000_0FF0, 4, 2'b01);
-        send_user_read (32'h3000_0FF0, 4, 2'b01);
+        #150ns;
+        send_user_read (32'h3000_0FE0, 4, 2'b01);
         #250ns;
 
-        // Phase 4: Response Code Sweep (OKAY, SLVERR, DECERR)
+        // Phase 4: Response Code Sweep (OKAY, SLVERR, DECERR with distinct addresses)
         `uvm_info("VSEQ", "Phase 4: Response Code Sweep...", UVM_MEDIUM)
-        // SLVERR (Address in 0xE000_0000 region)
+        // SLVERR (Address in 0xE000_0000 region: Write 0xE000_0000, Read 0xE000_0100)
         send_user_write(32'hE000_0000, 4, 2'b01);
-        #100ns;
+        #150ns;
         send_user_write(32'hE000_0000, 4, 2'b01);
-        #100ns;
-        send_user_read (32'hE000_0000, 4, 2'b01);
-        #100ns;
-        send_user_read (32'hE000_0000, 4, 2'b01);
-        #100ns;
+        #150ns;
+        send_user_read (32'hE000_0100, 4, 2'b01);
+        #150ns;
+        send_user_read (32'hE000_0100, 4, 2'b01);
+        #150ns;
 
-        // DECERR (Address in 0xF000_0000 region)
+        // DECERR (Address in 0xF000_0000 region: Write 0xF000_0000, Read 0xF000_0100)
         send_user_write(32'hF000_0000, 4, 2'b01);
-        #100ns;
+        #150ns;
         send_user_write(32'hF000_0000, 4, 2'b01);
-        #100ns;
-        send_user_read (32'hF000_0000, 4, 2'b01);
-        #100ns;
-        send_user_read (32'hF000_0000, 4, 2'b01);
-        #200ns;
+        #150ns;
+        send_user_read (32'hF000_0100, 4, 2'b01);
+        #150ns;
+        send_user_read (32'hF000_0100, 4, 2'b01);
+        #250ns;
 
         // Drain final bus handshakes
         #500ns;

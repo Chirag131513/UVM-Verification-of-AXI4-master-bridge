@@ -15,6 +15,7 @@ class axi_slave_driver extends uvm_driver #(axi_transaction);
     axi_slave_config cfg;
     axi_cmd_mbx_t    uvm_to_bfm;
     axi_ev_mbx_t     bfm_to_uvm;
+    virtual user_interface.monitor_mp u_vif;
 
     // Reactive slave internal memory (byte-addressable sparse array)
     bit [7:0] mem [bit [31:0]];
@@ -50,6 +51,7 @@ class axi_slave_driver extends uvm_driver #(axi_transaction);
         axi_cmd_mbx_wrapper u2b_wrap;
         axi_ev_mbx_wrapper  b2u_wrap;
         super.build_phase(phase);
+        void'(uvm_config_db#(virtual user_interface.monitor_mp)::get(this, "", "vif", u_vif));
         if (!uvm_config_db#(axi_slave_config)::get(this, "", "cfg", cfg)) begin
             cfg = axi_slave_config::type_id::create("cfg");
         end
@@ -173,11 +175,14 @@ class axi_slave_driver extends uvm_driver #(axi_transaction);
     // ------------------------------------------------------------------------
     task schedule_write_response(bit [3:0] id, bit [31:0] addr = 32'h0);
         axi_bfm_command b_cmd;
+        bit [31:0] eff_addr;
         b_cmd.channel_id   = AXI_CH_B;
         b_cmd.id           = id;
-        if (addr >= 32'hF000_0000)      b_cmd.resp_code = AXI_RESP_DECERR;
-        else if (addr >= 32'hE000_0000) b_cmd.resp_code = AXI_RESP_SLVERR;
-        else                            b_cmd.resp_code = cfg.default_resp;
+        eff_addr = (addr >= 32'hE000_0000) ? addr :
+                   ((u_vif != null && u_vif.user_start_addr >= 32'hE000_0000) ? u_vif.user_start_addr : addr);
+        if (eff_addr >= 32'hF000_0000)      b_cmd.resp_code = AXI_RESP_DECERR;
+        else if (eff_addr >= 32'hE000_0000) b_cmd.resp_code = AXI_RESP_SLVERR;
+        else                                b_cmd.resp_code = cfg.default_resp;
         b_cmd.delay_cycles = (cfg.timing_profile == PROFILE_STRESS_STALL) ? 8 :
                              (cfg.timing_profile == PROFILE_RANDOM_DELAY) ? $urandom_range(0, 3) : 0;
         uvm_to_bfm.put(b_cmd);
@@ -190,13 +195,16 @@ class axi_slave_driver extends uvm_driver #(axi_transaction);
         axi_bfm_command r_cmd;
         bit [31:0] curr_addr;
         bit [31:0] wrap_lower, wrap_upper;
+        bit [31:0] eff_addr;
 
         r_cmd.channel_id   = AXI_CH_R;
         r_cmd.id           = ar_ev.id;
         r_cmd.burst_len    = ar_ev.burst_len;
-        if (ar_ev.addr >= 32'hF000_0000)      r_cmd.resp_code = AXI_RESP_DECERR;
-        else if (ar_ev.addr >= 32'hE000_0000) r_cmd.resp_code = AXI_RESP_SLVERR;
-        else                                  r_cmd.resp_code = cfg.default_resp;
+        eff_addr = (ar_ev.addr >= 32'hE000_0000) ? ar_ev.addr :
+                   ((u_vif != null && u_vif.user_start_addr >= 32'hE000_0000) ? u_vif.user_start_addr : ar_ev.addr);
+        if (eff_addr >= 32'hF000_0000)      r_cmd.resp_code = AXI_RESP_DECERR;
+        else if (eff_addr >= 32'hE000_0000) r_cmd.resp_code = AXI_RESP_SLVERR;
+        else                                r_cmd.resp_code = cfg.default_resp;
         r_cmd.delay_cycles = (cfg.timing_profile == PROFILE_STRESS_STALL) ? 6 :
                              (cfg.timing_profile == PROFILE_RANDOM_DELAY) ? $urandom_range(0, 3) : 0;
         r_cmd.data         = new[int'(ar_ev.burst_len) + 1];
