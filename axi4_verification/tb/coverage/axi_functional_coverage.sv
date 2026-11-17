@@ -161,6 +161,12 @@ class axi_functional_coverage extends uvm_subscriber #(axi_transaction);
     axi_burst_e last_read_burst;
     axi_size_e  last_read_size;
 
+    // Queue-based handshake pairing for independent AW and W channels
+    bit [31:0]  aw_addr_q[$];
+    bit [7:0]   aw_len_q[$];
+    bit [3:0]   w_strb_q[$];
+    int         curr_w_beat = 0;
+
     // ------------------------------------------------------------------------
     // Constructor
     // ------------------------------------------------------------------------
@@ -168,6 +174,33 @@ class axi_functional_coverage extends uvm_subscriber #(axi_transaction);
         super.new(name, parent);
         cg_axi_trans    = new();
         cg_data_strobes = new();
+    endfunction
+
+    // ------------------------------------------------------------------------
+    // Helper: Match AW address and W first-beat strobe deterministically
+    // ------------------------------------------------------------------------
+    function void sample_strobes();
+        while (aw_addr_q.size() > 0 && w_strb_q.size() > 0) begin
+            bit [31:0] addr = aw_addr_q[0];
+            bit [7:0]  len  = aw_len_q[0];
+            bit [3:0]  strb = w_strb_q.pop_front();
+
+            if (curr_w_beat == 0) begin
+                cur_tx = axi_transaction::type_id::create("cov_strobe_tx");
+                cur_tx.addr = addr;
+                cur_tx.wstrb = new[1];
+                cur_tx.wstrb[0] = strb;
+                cg_data_strobes.sample();
+            end
+
+            if (curr_w_beat >= int'(len)) begin
+                curr_w_beat = 0;
+                void'(aw_addr_q.pop_front());
+                void'(aw_len_q.pop_front());
+            end else begin
+                curr_w_beat++;
+            end
+        end
     endfunction
 
     // ------------------------------------------------------------------------
@@ -180,18 +213,22 @@ class axi_functional_coverage extends uvm_subscriber #(axi_transaction);
             last_write_burst = t.burst;
             last_write_size  = t.size;
             cur_tx = t;
+            cur_tx.bresp = AXI_RESP_OKAY;
             cg_axi_trans.sample();
+            aw_addr_q.push_back(t.addr);
+            aw_len_q.push_back(t.len);
+            sample_strobes();
         end else if (t.get_name() == "ar_tx") begin
             last_read_addr   = t.addr;
             last_read_len    = t.len;
             last_read_burst  = t.burst;
             last_read_size   = t.size;
             cur_tx = t;
+            cur_tx.bresp = AXI_RESP_OKAY;
             cg_axi_trans.sample();
         end else if (t.get_name() == "w_tx" || t.wstrb.size() > 0) begin
-            cur_tx = t;
-            cur_tx.addr = last_write_addr;
-            cg_data_strobes.sample();
+            w_strb_q.push_back(t.wstrb[0]);
+            sample_strobes();
         end else if (t.get_name() == "b_tx") begin
             cur_tx = t;
             cur_tx.op_type = AXI_OP_WRITE;
@@ -199,6 +236,7 @@ class axi_functional_coverage extends uvm_subscriber #(axi_transaction);
             cur_tx.len     = last_write_len;
             cur_tx.burst   = last_write_burst;
             cur_tx.size    = last_write_size;
+            cur_tx.bresp   = t.bresp;
             cg_axi_trans.sample();
         end else if (t.get_name() == "r_tx") begin
             cur_tx = t;
@@ -212,7 +250,6 @@ class axi_functional_coverage extends uvm_subscriber #(axi_transaction);
         end else begin
             cur_tx = t;
             cg_axi_trans.sample();
-            if (t.wstrb.size() > 0) cg_data_strobes.sample();
         end
     endfunction
 

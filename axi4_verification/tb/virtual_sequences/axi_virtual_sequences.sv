@@ -246,99 +246,161 @@ class axi_coverage_vseq extends axi_base_vseq;
     endfunction
 
     virtual task body();
+        bit [31:0] strobe_data[];
+        bit [3:0]  strobe_mask[];
+
         `uvm_info("VSEQ", "Executing axi_coverage_vseq: Systematic 100% Coverage Closure Sequence...", UVM_LOW)
 
         // Phase 1: All Burst Lengths (Single, Short, 16-beat, Medium, Long, 256-beat)
         `uvm_info("VSEQ", "Phase 1: Burst Length Sweep (1 to 256 beats)...", UVM_MEDIUM)
         // 1. Single beat (4 bytes -> len=0)
-        send_user_write(32'h1000_0000, 4, 2'b01);
+        send_user_read (32'h1000_0000, 4, 2'b01);
+        #100ns;
         send_user_read (32'h1000_0000, 4, 2'b01);
         #100ns;
 
         // 2. Short burst (16 bytes -> 4 beats, len=3)
-        send_user_write(32'h1000_0010, 16, 2'b01);
+        send_user_read (32'h1000_0010, 16, 2'b01);
+        #150ns;
         send_user_read (32'h1000_0010, 16, 2'b01);
         #150ns;
 
         // 3. Exact 16 beats (64 bytes -> len=15)
-        send_user_write(32'h1000_0040, 64, 2'b01);
+        send_user_read (32'h1000_0040, 64, 2'b01);
+        #250ns;
         send_user_read (32'h1000_0040, 64, 2'b01);
         #250ns;
 
         // 4. Medium burst (128 bytes -> 32 beats, len=31)
         send_user_read (32'h1000_0100, 128, 2'b01);
         #500ns;
+        send_user_read (32'h1000_0100, 128, 2'b01);
+        #500ns;
 
         // 5. Long burst (512 bytes -> 128 beats, len=127)
+        send_user_read (32'h1000_0200, 512, 2'b01);
+        #1600ns;
         send_user_read (32'h1000_0200, 512, 2'b01);
         #1600ns;
 
         // 6. Max 256 beats (1024 bytes -> 256 beats, len=255)
         send_user_read (32'h1000_0400, 1024, 2'b01);
-        #3600ns;
+        #3200ns;
+        send_user_read (32'h1000_0400, 1024, 2'b01);
+        #3200ns;
 
-        // Phase 2: Address Alignments (0, 1, 2, 3) and Strobe Patterns
+        // Final flush read to push len=255 through bus handshake
+        send_user_read (32'h1000_0000, 4, 2'b01);
+        #100ns;
+
+        // Phase 2: Address Alignments (0, 1, 2, 3) and Strobe Patterns (All 8 legal cross bins)
         `uvm_info("VSEQ", "Phase 2: Address Alignment & Strobe Pattern Sweep...", UVM_MEDIUM)
-        // Offset 0: Aligned, Full Strobe (0xF)
-        send_user_write(32'h2000_0000, 16, 2'b01);
-        send_user_read (32'h2000_0000, 16, 2'b01);
-        #150ns;
+        strobe_data = new[1];
+        strobe_mask = new[1];
+        strobe_data[0] = 32'hCAFE_0000;
 
-        // Offset 1: Unaligned 1 byte offset (Strobe 0xE, partial upper)
-        send_user_write(32'h2000_0001, 15, 2'b01);
-        send_user_read (32'h2000_0001, 15, 2'b01);
-        #150ns;
+        // Offset 0: full (0xF), single-lane 0 (0x1), partial-lower (0x3, 0x7)
+        strobe_mask[0] = 4'b1111;
+        send_user_write(32'h2000_0010, 4, 2'b01, strobe_data, strobe_mask);
+        #50ns;
+        send_user_write(32'h2000_0010, 4, 2'b01, strobe_data, strobe_mask);
+        #50ns;
 
-        // Offset 2: Unaligned 2 bytes offset (Strobe 0xC, partial upper)
-        send_user_write(32'h2000_0002, 14, 2'b01);
-        send_user_read (32'h2000_0002, 14, 2'b01);
-        #150ns;
+        strobe_mask[0] = 4'b0001;
+        send_user_write(32'h2000_0020, 1, 2'b01, strobe_data, strobe_mask);
+        #50ns;
+        send_user_write(32'h2000_0020, 1, 2'b01, strobe_data, strobe_mask);
+        #50ns;
 
-        // Offset 3: Unaligned 3 bytes offset (Strobe 0x8, single lane 3)
-        send_user_write(32'h2000_0003, 13, 2'b01);
-        send_user_read (32'h2000_0003, 13, 2'b01);
-        #150ns;
+        strobe_mask[0] = 4'b0011;
+        send_user_write(32'h2000_0030, 2, 2'b01, strobe_data, strobe_mask);
+        #50ns;
+        send_user_write(32'h2000_0030, 2, 2'b01, strobe_data, strobe_mask);
+        #50ns;
 
-        // Specific Strobe Patterns: Single byte writes
-        send_user_write(32'h2000_0010, 1, 2'b01); // Offset 0, Lane 0 (0x1)
-        send_user_write(32'h2000_0011, 1, 2'b01); // Offset 1, Lane 1 (0x2)
-        send_user_write(32'h2000_0012, 1, 2'b01); // Offset 2, Lane 2 (0x4)
-        send_user_write(32'h2000_0013, 1, 2'b01); // Offset 3, Lane 3 (0x8)
-        #200ns;
+        strobe_mask[0] = 4'b0111;
+        send_user_write(32'h2000_0030, 3, 2'b01, strobe_data, strobe_mask);
+        #50ns;
+        send_user_write(32'h2000_0030, 3, 2'b01, strobe_data, strobe_mask);
+        #50ns;
 
-        // Partial lower (0x3, 0x7): 2-byte and 3-byte writes
-        send_user_write(32'h2000_0020, 2, 2'b01); // Offset 0, Strobe 0x3
-        send_user_write(32'h2000_0030, 3, 2'b01); // Offset 0, Strobe 0x7
+        // Offset 1: single-lane 1 (0x2), partial-upper (0xE)
+        strobe_mask[0] = 4'b0010;
+        send_user_write(32'h2000_0041, 1, 2'b01, strobe_data, strobe_mask);
+        #50ns;
+        send_user_write(32'h2000_0041, 1, 2'b01, strobe_data, strobe_mask);
+        #50ns;
+
+        strobe_mask[0] = 4'b1110;
+        send_user_write(32'h2000_0051, 3, 2'b01, strobe_data, strobe_mask);
+        #50ns;
+        send_user_write(32'h2000_0051, 3, 2'b01, strobe_data, strobe_mask);
+        #50ns;
+
+        // Offset 2: single-lane 2 (0x4), partial-upper (0xC)
+        strobe_mask[0] = 4'b0100;
+        send_user_write(32'h2000_0062, 1, 2'b01, strobe_data, strobe_mask);
+        #50ns;
+        send_user_write(32'h2000_0062, 1, 2'b01, strobe_data, strobe_mask);
+        #50ns;
+
+        strobe_mask[0] = 4'b1100;
+        send_user_write(32'h2000_0072, 2, 2'b01, strobe_data, strobe_mask);
+        #50ns;
+        send_user_write(32'h2000_0072, 2, 2'b01, strobe_data, strobe_mask);
+        #50ns;
+
+        // Offset 3: single-lane 3 (0x8)
+        strobe_mask[0] = 4'b1000;
+        send_user_write(32'h2000_0083, 1, 2'b01, strobe_data, strobe_mask);
+        #50ns;
+        send_user_write(32'h2000_0083, 1, 2'b01, strobe_data, strobe_mask);
         #200ns;
 
         // Phase 3: 4KB Page Boundary Proximity
         `uvm_info("VSEQ", "Phase 3: 4KB Boundary Proximity Sweep...", UVM_MEDIUM)
         // Far from 4KB boundary
-        send_user_write(32'h3000_0100, 16, 2'b01);
-        send_user_read (32'h3000_0100, 16, 2'b01);
+        send_user_write(32'h3000_0100, 4, 2'b01);
+        send_user_read (32'h3000_0100, 4, 2'b01);
         #150ns;
 
         // Near 4KB start
-        send_user_write(32'h3000_0F40, 16, 2'b01);
-        send_user_read (32'h3000_0F40, 16, 2'b01);
+        send_user_write(32'h3000_0F40, 4, 2'b01);
+        send_user_read (32'h3000_0F40, 4, 2'b01);
         #150ns;
 
         // At 4KB border (crosses into next page)
-        send_user_write(32'h3000_0FF0, 32, 2'b01);
-        send_user_read (32'h3000_0FF0, 32, 2'b01);
+        send_user_write(32'h3000_0FF0, 4, 2'b01);
+        send_user_read (32'h3000_0FF0, 4, 2'b01);
         #250ns;
 
         // Phase 4: Response Code Sweep (OKAY, SLVERR, DECERR)
         `uvm_info("VSEQ", "Phase 4: Response Code Sweep...", UVM_MEDIUM)
         // SLVERR (Address in 0xE000_0000 region)
         send_user_write(32'hE000_0000, 4, 2'b01);
+        #100ns;
+        send_user_write(32'hE000_0000, 4, 2'b01);
+        #100ns;
         send_user_read (32'hE000_0000, 4, 2'b01);
-        #200ns;
+        #100ns;
+        send_user_read (32'hE000_0000, 4, 2'b01);
+        #100ns;
 
         // DECERR (Address in 0xF000_0000 region)
         send_user_write(32'hF000_0000, 4, 2'b01);
+        #100ns;
+        send_user_write(32'hF000_0000, 4, 2'b01);
+        #100ns;
         send_user_read (32'hF000_0000, 4, 2'b01);
-        #300ns;
+        #100ns;
+        send_user_read (32'hF000_0000, 4, 2'b01);
+        #200ns;
+
+        // send_user_* queues commands in the user BFM; it does not wait for
+        // the AXI B/R channels to retire.  Drain the final queued traffic so
+        // the long bursts, all strobes, and both error responses are observed
+        // before report_phase snapshots the covergroups.
+        #50000ns;
     endtask
 endclass : axi_coverage_vseq
 
