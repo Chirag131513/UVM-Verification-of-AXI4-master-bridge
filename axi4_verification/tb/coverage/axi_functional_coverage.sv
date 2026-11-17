@@ -184,7 +184,7 @@ class axi_functional_coverage extends uvm_subscriber #(axi_transaction);
             cur_tx.len     = last_read_len;
             cur_tx.burst   = last_read_burst;
             cur_tx.size    = last_read_size;
-            cur_tx.bresp   = t.rresp; // map read response code into bresp field for cp_response
+            cur_tx.bresp   = (t.rresp.size() > 0) ? t.rresp[0] : AXI_RESP_OKAY;
             cg_axi_trans.sample();
         end else begin
             cur_tx = t;
