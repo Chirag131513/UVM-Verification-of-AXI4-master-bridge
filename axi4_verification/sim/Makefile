@@ -60,16 +60,22 @@ xrun:
 # ------------------------------------------------------------------------------
 # Cadence Coverage Analysis (IMC - Integrated Metrics Center)
 # ------------------------------------------------------------------------------
+COV_RUN ?= $(REPORTS_DIR)/coverage/scope/test_sv1
+
 cov-gui:
-	imc -covworkdir $(REPORTS_DIR)/coverage &
+	imc -load $(COV_RUN) &
 
 cov-html:
 	@mkdir -p $(REPORTS_DIR)/coverage_html
-	imc -covworkdir $(REPORTS_DIR)/coverage -load test_sv1 -batch -execute "report_detail -html -out $(REPORTS_DIR)/coverage_html"
+	imc -batch -execcmd "load $(COV_RUN); report -html -detail -metrics all -all -out $(REPORTS_DIR)/coverage_html"
 	@echo "Coverage HTML generated at $(REPORTS_DIR)/coverage_html/index.html"
 
 cov-text:
-	imc -covworkdir $(REPORTS_DIR)/coverage -load test_sv1 -batch -execute "report_summary"
+	imc -batch -execcmd "load $(COV_RUN); report -summary"
+
+cov-detail:
+	imc -batch -execcmd "load $(COV_RUN); report -detail -metrics all -all -out $(REPORTS_DIR)/coverage_detail.txt"
+	@echo "Coverage detail report written to $(REPORTS_DIR)/coverage_detail.txt"
 
 # ------------------------------------------------------------------------------
 # Siemens QuestaSim Flow (vlog / vsim)
@@ -92,4 +98,4 @@ clean:
 	rm -rf work INCA_libs xcelium.d xrun.history *.log *.vcd *.wlf tr_db.dir
 	rm -rf $(REPORTS_DIR)/*.log
 
-.PHONY: xrun xrun-compile cov-gui cov-html cov-text vsim regression clean
+.PHONY: xrun xrun-compile cov-gui cov-html cov-text cov-detail vsim regression clean
