@@ -74,37 +74,9 @@ interface axi_interface #(
     // Clocking Blocks
     // ------------------------------------------------------------------------
     
-    // Master Clocking Block (Active VIP Master driving bus)
-    clocking cb_master @(posedge ACLK);
-        default input #1step output #1ns;
-        output awid, awaddr, awlen, awsize, awburst, awcache, awprot, awvalid;
-        input  awready;
-        output wdata, wstrb, wlast, wvalid;
-        input  wready;
-        input  bid, bresp, bvalid;
-        output bready;
-        output arid, araddr, arlen, arsize, arburst, arcache, arprot, arvalid;
-        input  arready;
-        input  rid, rdata, rresp, rlast, rvalid;
-        output rready;
-    endclocking
-
-    // Slave Clocking Block (Active VIP Slave responding to Master DUT)
-    clocking cb_slave @(posedge ACLK);
-        default input #1step output #1ns;
-        input  awid, awaddr, awlen, awsize, awburst, awcache, awprot, awvalid;
-        output awready;
-        input  wdata, wstrb, wlast, wvalid;
-        output wready;
-        output bid, bresp, bvalid;
-        input  bready;
-        input  arid, araddr, arlen, arsize, arburst, arcache, arprot, arvalid;
-        output arready;
-        output rid, rdata, rresp, rlast, rvalid;
-        input  rready;
-    endclocking
-
+    // ------------------------------------------------------------------------
     // Monitor Clocking Block (Passive sampling with zero race condition)
+    // ------------------------------------------------------------------------
     clocking cb_mon @(posedge ACLK);
         default input #1step;
         input awid, awaddr, awlen, awsize, awburst, awcache, awprot, awvalid, awready;
@@ -118,15 +90,33 @@ interface axi_interface #(
     // Modports
     // ------------------------------------------------------------------------
     modport master_mp (
-        clocking cb_master,
-        input ACLK,
-        input ARESETn
+        output awid, awaddr, awlen, awsize, awburst, awcache, awprot, awvalid,
+        input  awready,
+        output wdata, wstrb, wlast, wvalid,
+        input  wready,
+        input  bid, bresp, bvalid,
+        output bready,
+        output arid, araddr, arlen, arsize, arburst, arcache, arprot, arvalid,
+        input  arready,
+        input  rid, rdata, rresp, rlast, rvalid,
+        output rready,
+        input  ACLK,
+        input  ARESETn
     );
 
     modport slave_mp (
-        clocking cb_slave,
-        input ACLK,
-        input ARESETn
+        input  awid, awaddr, awlen, awsize, awburst, awcache, awprot, awvalid,
+        output awready,
+        input  wdata, wstrb, wlast, wvalid,
+        output wready,
+        output bid, bresp, bvalid,
+        input  bready,
+        input  arid, araddr, arlen, arsize, arburst, arcache, arprot, arvalid,
+        output arready,
+        output rid, rdata, rresp, rlast, rvalid,
+        input  rready,
+        input  ACLK,
+        input  ARESETn
     );
 
     modport monitor_mp (

@@ -49,19 +49,8 @@ interface user_interface #(
     logic                      read_error;
 
     // ------------------------------------------------------------------------
-    // Clocking Blocks
+    // Monitor Clocking Block (Passive sampling with zero race condition)
     // ------------------------------------------------------------------------
-    clocking cb_drv @(posedge clk);
-        default input #1step output #1ns;
-        output user_start_addr, user_total_bytes, user_rnw, user_burst, user_cmd_valid;
-        input  user_cmd_ready;
-        output user_tx_data, user_tx_wstrb, user_tx_valid;
-        input  user_tx_ready;
-        input  user_rx_data, user_rx_valid;
-        output user_rx_ready;
-        input  write_complete, write_error, read_error;
-    endclocking
-
     clocking cb_mon @(posedge clk);
         default input #1step;
         input user_start_addr, user_total_bytes, user_rnw, user_burst, user_cmd_valid, user_cmd_ready;
@@ -71,9 +60,15 @@ interface user_interface #(
     endclocking
 
     modport driver_mp (
-        clocking cb_drv,
-        input clk,
-        input rst_n
+        output user_start_addr, user_total_bytes, user_rnw, user_burst, user_cmd_valid,
+        input  user_cmd_ready,
+        output user_tx_data, user_tx_wstrb, user_tx_valid,
+        input  user_tx_ready,
+        input  user_rx_data, user_rx_valid,
+        output user_rx_ready,
+        input  write_complete, write_error, read_error,
+        input  clk,
+        input  rst_n
     );
 
     modport monitor_mp (
