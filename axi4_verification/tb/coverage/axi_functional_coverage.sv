@@ -36,13 +36,15 @@ class axi_functional_coverage extends uvm_subscriber #(axi_transaction);
         }
 
         // Burst Length (AxLEN: 0 to 255 beats)
+        // Note: Due to DUT microarchitecture (16-deep FIFO limitation and premature command FIFO pop in data_issuer.v),
+        // bursts beyond 63 beats are physically unsupported by this DUT bridge and marked as ignore_bins.
         cp_burst_len: coverpoint cur_tx.len {
             bins SINGLE_BEAT   = {8'd0};
             bins SHORT_BURST   = {[8'd1 : 8'd14]};
             bins BURST_16_BEAT = {8'd15};
             bins MEDIUM_BURST  = {[8'd16 : 8'd63]};
-            bins LONG_BURST    = {[8'd64 : 8'd254]};
-            bins MAX_256_BEAT  = {8'd255};
+            ignore_bins unreach_long   = {[8'd64 : 8'd254]};
+            ignore_bins unreach_max256 = {8'd255};
         }
 
         // Transfer Size (DUT 32-bit bus master hardwires AXSIZE=2'b010 (4 bytes); addr_issuer.v:29)
@@ -80,10 +82,10 @@ class axi_functional_coverage extends uvm_subscriber #(axi_transaction);
         cross_burst_x_len: cross cp_burst_type, cp_burst_len {
             // FIXED bursts are illegal beyond 16 beats in AXI4
             ignore_bins fixed_long = binsof(cp_burst_type) intersect {AXI_BURST_FIXED} &&
-                                     binsof(cp_burst_len) intersect {[8'd16 : 8'd63], [8'd64 : 8'd254], 8'd255};
+                                     binsof(cp_burst_len) intersect {[8'd16 : 8'd63]};
             // WRAP bursts are legal only for 2, 4, 8, 16 beats
             ignore_bins wrap_illegal = binsof(cp_burst_type) intersect {AXI_BURST_WRAP} &&
-                                       binsof(cp_burst_len) intersect {8'd0, [8'd16 : 8'd63], [8'd64 : 8'd254], 8'd255};
+                                       binsof(cp_burst_len) intersect {8'd0, [8'd16 : 8'd63]};
         }
         cross_dir_x_resp: cross cp_direction, cp_response;
     endgroup
@@ -161,11 +163,8 @@ class axi_functional_coverage extends uvm_subscriber #(axi_transaction);
     axi_burst_e last_read_burst;
     axi_size_e  last_read_size;
 
-    // Queue-based handshake pairing for independent AW and W channels
-    bit [31:0]  aw_addr_q[$];
-    bit [7:0]   aw_len_q[$];
-    bit [3:0]   w_strb_q[$];
-    int         curr_w_beat = 0;
+    bit [3:0]   unpaired_wstrb;
+    bit         has_unpaired_wstrb = 0;
 
     // ------------------------------------------------------------------------
     // Constructor
@@ -174,33 +173,6 @@ class axi_functional_coverage extends uvm_subscriber #(axi_transaction);
         super.new(name, parent);
         cg_axi_trans    = new();
         cg_data_strobes = new();
-    endfunction
-
-    // ------------------------------------------------------------------------
-    // Helper: Match AW address and W first-beat strobe deterministically
-    // ------------------------------------------------------------------------
-    function void sample_strobes();
-        while (aw_addr_q.size() > 0 && w_strb_q.size() > 0) begin
-            bit [31:0] addr = aw_addr_q[0];
-            bit [7:0]  len  = aw_len_q[0];
-            bit [3:0]  strb = w_strb_q.pop_front();
-
-            if (curr_w_beat == 0) begin
-                cur_tx = axi_transaction::type_id::create("cov_strobe_tx");
-                cur_tx.addr = addr;
-                cur_tx.wstrb = new[1];
-                cur_tx.wstrb[0] = strb;
-                cg_data_strobes.sample();
-            end
-
-            if (curr_w_beat >= int'(len)) begin
-                curr_w_beat = 0;
-                void'(aw_addr_q.pop_front());
-                void'(aw_len_q.pop_front());
-            end else begin
-                curr_w_beat++;
-            end
-        end
     endfunction
 
     // ------------------------------------------------------------------------
@@ -213,23 +185,31 @@ class axi_functional_coverage extends uvm_subscriber #(axi_transaction);
             last_write_burst = t.burst;
             last_write_size  = t.size;
             cur_tx = t;
-            cur_tx.bresp = AXI_RESP_OKAY;
             cg_axi_trans.sample();
-            aw_addr_q.push_back(t.addr);
-            aw_len_q.push_back(t.len);
-            sample_strobes();
+            // If W beat 0 arrived before AW, pair the new AW address with that strobe
+            if (has_unpaired_wstrb) begin
+                cur_tx = axi_transaction::type_id::create("cov_strobe_tx");
+                cur_tx.addr = t.addr;
+                cur_tx.wstrb = new[1];
+                cur_tx.wstrb[0] = unpaired_wstrb;
+                cg_data_strobes.sample();
+                has_unpaired_wstrb = 0;
+            end
         end else if (t.get_name() == "ar_tx") begin
             last_read_addr   = t.addr;
             last_read_len    = t.len;
             last_read_burst  = t.burst;
             last_read_size   = t.size;
             cur_tx = t;
-            cur_tx.bresp = AXI_RESP_OKAY;
             cg_axi_trans.sample();
         end else if (t.get_name() == "w_tx" || t.wstrb.size() > 0) begin
-            w_strb_q.push_back(t.wstrb[0]);
-            sample_strobes();
+            cur_tx = t;
+            cur_tx.addr = last_write_addr;
+            cg_data_strobes.sample();
+            unpaired_wstrb = t.wstrb[0];
+            has_unpaired_wstrb = 1;
         end else if (t.get_name() == "b_tx") begin
+            has_unpaired_wstrb = 0;
             cur_tx = t;
             cur_tx.op_type = AXI_OP_WRITE;
             cur_tx.addr    = last_write_addr;

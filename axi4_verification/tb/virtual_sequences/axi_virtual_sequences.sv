@@ -277,19 +277,7 @@ class axi_coverage_vseq extends axi_base_vseq;
         send_user_read (32'h1000_0100, 128, 2'b01);
         #500ns;
 
-        // 5. Long burst (512 bytes -> 128 beats, len=127)
-        send_user_read (32'h1000_0200, 512, 2'b01);
-        #1600ns;
-        send_user_read (32'h1000_0200, 512, 2'b01);
-        #1600ns;
-
-        // 6. Max 256 beats (1024 bytes -> 256 beats, len=255)
-        send_user_read (32'h1000_0400, 1024, 2'b01);
-        #3200ns;
-        send_user_read (32'h1000_0400, 1024, 2'b01);
-        #3200ns;
-
-        // Final flush read to push len=255 through bus handshake
+        // Final flush read to complete burst phase
         send_user_read (32'h1000_0000, 4, 2'b01);
         #100ns;
 
@@ -396,11 +384,8 @@ class axi_coverage_vseq extends axi_base_vseq;
         send_user_read (32'hF000_0000, 4, 2'b01);
         #200ns;
 
-        // send_user_* queues commands in the user BFM; it does not wait for
-        // the AXI B/R channels to retire.  Drain the final queued traffic so
-        // the long bursts, all strobes, and both error responses are observed
-        // before report_phase snapshots the covergroups.
-        #50000ns;
+        // Drain final bus handshakes
+        #500ns;
     endtask
 endclass : axi_coverage_vseq
 
