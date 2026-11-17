@@ -1,0 +1,46 @@
+# ==============================================================================
+# AMBA AXI4 UVM Verification Environment - Git Ignore
+# ==============================================================================
+
+# Cadence Xcelium / Incisive artifacts
+INCA_libs/
+xcelium.d/
+xrun.history
+xrun.log
+ncverilog.log
+ncverilog.key
+.simvision/
+*.dsn
+*.trn
+tr_db.dir/
+*.ucm
+*.ucd
+
+# Siemens QuestaSim / ModelSim artifacts
+work/
+transcript
+*.wlf
+
+# Synopsys VCS artifacts
+csrc/
+simv
+simv.daidir/
+*.vdb/
+urgReport/
+ucli.key
+
+# Waveform databases & simulation traces
+*.vcd
+*.fsdb
+*.shm/
+
+# Python cache & temporary files
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# OS specific files
+.DS_Store
+Thumbs.db
+Desktop.ini
