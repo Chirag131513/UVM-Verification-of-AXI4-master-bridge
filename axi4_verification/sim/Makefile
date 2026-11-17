@@ -58,6 +58,20 @@ xrun:
 		-l $(REPORTS_DIR)/$(TEST)_seed$(SEED).log
 
 # ------------------------------------------------------------------------------
+# Cadence Coverage Analysis (IMC - Integrated Metrics Center)
+# ------------------------------------------------------------------------------
+cov-gui:
+	imc -covworkdir $(REPORTS_DIR)/coverage &
+
+cov-html:
+	@mkdir -p $(REPORTS_DIR)/coverage_html
+	imc -covworkdir $(REPORTS_DIR)/coverage -load test_sv1 -batch -execute "report_detail -html -out $(REPORTS_DIR)/coverage_html"
+	@echo "Coverage HTML generated at $(REPORTS_DIR)/coverage_html/index.html"
+
+cov-text:
+	imc -covworkdir $(REPORTS_DIR)/coverage -load test_sv1 -batch -execute "report_summary"
+
+# ------------------------------------------------------------------------------
 # Siemens QuestaSim Flow (vlog / vsim)
 # ------------------------------------------------------------------------------
 vsim:
@@ -78,4 +92,4 @@ clean:
 	rm -rf work INCA_libs xcelium.d xrun.history *.log *.vcd *.wlf tr_db.dir
 	rm -rf $(REPORTS_DIR)/*.log
 
-.PHONY: xrun xrun-compile vsim regression clean
+.PHONY: xrun xrun-compile cov-gui cov-html cov-text vsim regression clean

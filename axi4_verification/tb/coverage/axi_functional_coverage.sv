@@ -19,6 +19,7 @@ class axi_functional_coverage extends uvm_subscriber #(axi_transaction);
     // ------------------------------------------------------------------------
     covergroup cg_axi_trans;
         option.per_instance = 1;
+        option.name = "cg_axi_trans";
         option.comment = "AXI4 Protocol & Transaction Coverage";
 
         // Operation Direction
@@ -91,6 +92,7 @@ class axi_functional_coverage extends uvm_subscriber #(axi_transaction);
     // ------------------------------------------------------------------------
     covergroup cg_data_strobes;
         option.per_instance = 1;
+        option.name = "cg_data_strobes";
 
         cp_addr_alignment_w: coverpoint cur_tx.addr[1:0] {
             bins ALIGNED_0 = {2'b00};
