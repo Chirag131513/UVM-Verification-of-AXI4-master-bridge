@@ -20,55 +20,55 @@ interface axi_interface #(
     // ------------------------------------------------------------------------
     // Write Address Channel (AW)
     // ------------------------------------------------------------------------
-    logic [ID_WIDTH-1:0]       awid    = '0;
-    logic [ADDR_WIDTH-1:0]     awaddr  = '0;
-    logic [7:0]                awlen   = '0;
-    logic [2:0]                awsize  = '0;
-    logic [1:0]                awburst = '0;
-    logic [3:0]                awcache = '0;
-    logic [2:0]                awprot  = '0;
-    logic                      awvalid = 1'b0;
-    logic                      awready = 1'b0;
+    logic [ID_WIDTH-1:0]       awid;
+    logic [ADDR_WIDTH-1:0]     awaddr;
+    logic [7:0]                awlen;
+    logic [2:0]                awsize;
+    logic [1:0]                awburst;
+    logic [3:0]                awcache;
+    logic [2:0]                awprot;
+    logic                      awvalid;
+    logic                      awready;
 
     // ------------------------------------------------------------------------
     // Write Data Channel (W)
     // ------------------------------------------------------------------------
-    logic [DATA_WIDTH-1:0]     wdata   = '0;
-    logic [(DATA_WIDTH/8)-1:0] wstrb   = '0;
-    logic                      wlast   = 1'b0;
-    logic                      wvalid  = 1'b0;
-    logic                      wready  = 1'b0;
+    logic [DATA_WIDTH-1:0]     wdata;
+    logic [(DATA_WIDTH/8)-1:0] wstrb;
+    logic                      wlast;
+    logic                      wvalid;
+    logic                      wready;
 
     // ------------------------------------------------------------------------
     // Write Response Channel (B)
     // ------------------------------------------------------------------------
-    logic [ID_WIDTH-1:0]       bid     = '0;
-    logic [1:0]                bresp   = '0;
-    logic                      bvalid  = 1'b0;
-    logic                      bready  = 1'b0;
+    logic [ID_WIDTH-1:0]       bid;
+    logic [1:0]                bresp;
+    logic                      bvalid;
+    logic                      bready;
 
     // ------------------------------------------------------------------------
     // Read Address Channel (AR)
     // ------------------------------------------------------------------------
-    logic [ID_WIDTH-1:0]       arid    = '0;
-    logic [ADDR_WIDTH-1:0]     araddr  = '0;
-    logic [7:0]                arlen   = '0;
-    logic [2:0]                arsize  = '0;
-    logic [1:0]                arburst = '0;
-    logic [3:0]                arcache = '0;
-    logic [2:0]                arprot  = '0;
-    logic                      arvalid = 1'b0;
-    logic                      arready = 1'b0;
+    logic [ID_WIDTH-1:0]       arid;
+    logic [ADDR_WIDTH-1:0]     araddr;
+    logic [7:0]                arlen;
+    logic [2:0]                arsize;
+    logic [1:0]                arburst;
+    logic [3:0]                arcache;
+    logic [2:0]                arprot;
+    logic                      arvalid;
+    logic                      arready;
 
     // ------------------------------------------------------------------------
     // Read Data Channel (R)
     // ------------------------------------------------------------------------
-    logic [ID_WIDTH-1:0]       rid     = '0;
-    logic [DATA_WIDTH-1:0]     rdata   = '0;
-    logic [1:0]                rresp   = '0;
-    logic                      rlast   = 1'b0;
-    logic                      rvalid  = 1'b0;
-    logic                      rready  = 1'b0;
+    logic [ID_WIDTH-1:0]       rid;
+    logic [DATA_WIDTH-1:0]     rdata;
+    logic [1:0]                rresp;
+    logic                      rlast;
+    logic                      rvalid;
+    logic                      rready;
 
     // ------------------------------------------------------------------------
     // Clocking Blocks
